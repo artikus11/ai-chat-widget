@@ -1,20 +1,44 @@
-// src/ChatUI.js
-export default class ChatUI {
-    constructor(container) {
-        this.container = container;
-        this.elements = this.selectElements();
+const defaultSelectors = {
+    toggle: '.chatbox__toggle',
+    wrapper: '.chatbox__wrapper',
+    closeButton: '.chatbox__close',
+    messages: '.chatbox__messages-inner',
+    textarea: '.chatbox__textarea',
+    inputForm: '.chatbox__input-form'
+};
 
+const defaultClasses = {
+    message: 'chatbox__message',
+    user: 'chatbox__message--user',
+    operator: 'chatbox__message--operator',
+    content: 'chatbox__message-content',
+    text: 'chatbox__message-text',
+    typingDots: 'chatbox__typing-dots',
+    wrapperOpen: 'chatbox__wrapper--open',
+    toggleHidden: 'chatbox__toggle--hidden'
+};
+
+export default class ChatUI {
+    constructor(container, options = {}) {
+        this.container = container;
+        // themeOptions и selectorsOptions объединены в options
+        this.selectors = { ...defaultSelectors, ...(options.selectors || {}) };
+        this.classes = { ...defaultClasses, ...(options.classes || {}) };
+        // Можно добавить обработку themeOptions (например, options.color)
+        if (options.color) this.container.style.backgroundColor = options.color;
+        if (options.size) this.container.style.fontSize = options.size;
+        this.elements = this.selectElements();
         this.typingEl = null;
     }
 
     selectElements() {
         return {
-            toggle: this.container.querySelector('.chatbox__toggle'),
-            wrapper: this.container.querySelector('.chatbox__wrapper'),
-            closeButton: this.container.querySelector('.chatbox__close'),
-            messages: this.container.querySelector('.chatbox__messages-inner'),
-            textarea: this.container.querySelector('.chatbox__textarea'),
-            inputForm: this.container.querySelector('.chatbox__input-form')
+            toggle: this.container.querySelector(this.selectors.toggle),
+            wrapper: this.container.querySelector(this.selectors.wrapper),
+            closeButton: this.container.querySelector(this.selectors.closeButton),
+            messages: this.container.querySelector(this.selectors.messages),
+            textarea: this.container.querySelector(this.selectors.textarea),
+            inputForm: this.container.querySelector(this.selectors.inputForm)
         };
     }
 
@@ -52,45 +76,17 @@ export default class ChatUI {
     }
 
     addMessage(text, isUser, isHtml = false) {
-        // const el = document.createElement('div');
-        // el.classList.add('chatbox__message');
-        // el.classList.add(isUser ? 'chatbox__message--user' : 'chatbox__message--operator');
-
-        // const escaped = this.escapeHtml(text);
-
-        // el.innerHTML = `
-        //     <div class="chatbox__message-content">
-        //         ${!isUser ? `
-        //             <span class="chatbox__message-avatar" style="background-image: url('https://image.crisp.chat/avatar/website/-JzqEmX56venQuQw4YV8/120/?1753352557765')"></span>
-        //         ` : ''}
-        //         <div class="chatbox__message-text">${escaped}</div>
-        //     </div>
-        // `;
-
-        // this.elements.messages?.appendChild(el);
-        // this.scrollToBottom();
-
-
         const el = document.createElement('div');
-        el.classList.add('chatbox__message');
-        el.classList.add(isUser ? 'chatbox__message--user' : 'chatbox__message--operator');
+        el.classList.add(this.classes.message);
+        el.classList.add(isUser ? this.classes.user : this.classes.operator);
 
         const content = document.createElement('div');
-        content.className = 'chatbox__message-content';
-
-        // if (!isUser) {
-        //     const avatar = document.createElement('span');
-        //     avatar.className = 'chatbox__message-avatar';
-        //     avatar.style.backgroundImage = "url('https://image.crisp.chat/avatar/website/-JzqEmX56venQuQw4YV8/120/?1753352557765')";
-        //     content.appendChild(avatar);
-        // }
+        content.className = this.classes.content;
 
         const textEl = document.createElement('div');
-        textEl.className = 'chatbox__message-text';
+        textEl.className = this.classes.text;
 
         if (isHtml) {
-            // Доверяем marked — он уже экранирует опасные теги
-            // Но можно дополнительно очистить, если хочешь (см. ниже)
             textEl.innerHTML = text;
         } else {
             textEl.textContent = text;
@@ -115,11 +111,11 @@ export default class ChatUI {
 
     showTyping() {
         this.typingEl = document.createElement('div');
-        this.typingEl.className = 'chatbox__message chatbox__message--operator';
+        this.typingEl.className = `${this.classes.message} ${this.classes.operator}`;
         this.typingEl.innerHTML = `
-        <div class="chatbox__message-content">
-            <div class="chatbox__message-text">
-                <span class="chatbox__typing-dots"></span>
+        <div class="${this.classes.content}">
+            <div class="${this.classes.text}">
+                <span class="${this.classes.typingDots}"></span>
             </div>
         </div>
     `;
@@ -129,12 +125,10 @@ export default class ChatUI {
 
     updateTyping(text) {
         if (this.typingEl) {
-            const textEl = this.typingEl.querySelector('.chatbox__message-text');
-
+            const textEl = this.typingEl.querySelector(`.${this.classes.text}`);
             if (textEl) {
                 textEl.textContent = text;
             }
-
             this.scrollToBottom();
         }
     }
@@ -147,41 +141,26 @@ export default class ChatUI {
     finalizeTypingAsMessage() {
         if (this.typingEl) {
             // Убираем анимацию (точки)
-            const dots = this.typingEl.querySelector('.chatbox__typing-dots');
+            const dots = this.typingEl.querySelector(`.${this.classes.typingDots}`);
             if (dots) {
                 dots.remove();
             }
-
-            // Можно добавить аватар, если его ещё нет
-            // const content = this.typingEl.querySelector('.chatbox__message-content');
-            // if (content && !this.typingEl.querySelector('.chatbox__message-avatar')) {
-            //     const avatar = document.createElement('span');
-            //     avatar.className = 'chatbox__message-avatar';
-            //     avatar.style.backgroundImage = "url('https://image.crisp.chat/avatar/website/-JzqEmX56venQuQw4YV8/120/?1753352557765')";
-            //     content.insertBefore(avatar, content.firstChild);
-            // }
-
-            // Убираем классы, связанные с "печатанием", если есть
-            // (если ты их добавлял — сейчас не добавляешь, но на будущее)
-            // Оставляем только базовые классы
-
-            // Открепляем от контроллера
             this.typingEl = null;
         }
     }
 
 
     open() {
-        this.elements.wrapper?.classList.add('chatbox__wrapper--open');
-        this.elements.toggle?.classList.add('chatbox__toggle--hidden');
+        this.elements.wrapper?.classList.add(this.classes.wrapperOpen);
+        this.elements.toggle?.classList.add(this.classes.toggleHidden);
     }
 
     close() {
-        this.elements.wrapper?.classList.remove('chatbox__wrapper--open');
-        this.elements.toggle?.classList.remove('chatbox__toggle--hidden');
+        this.elements.wrapper?.classList.remove(this.classes.wrapperOpen);
+        this.elements.toggle?.classList.remove(this.classes.toggleHidden);
     }
 
     isOpen() {
-        return this.elements.wrapper?.classList.contains('chatbox__wrapper--open');
+        return this.elements.wrapper?.classList.contains(this.classes.wrapperOpen);
     }
 }

@@ -1,6 +1,10 @@
 export default class ChatAPI {
-    constructor(apiUrl) {
-        this.apiUrl = apiUrl;
+    constructor(apiOptions = {}) {
+        if (!apiOptions.url) {
+            throw new Error('apiOptions.url is required');
+        }
+        this.apiUrl = apiOptions.url;
+        this.greeting = apiOptions.greeting || '';
         this.chatId = this.loadChatId();
         this.abortController = null;
     }
@@ -28,7 +32,7 @@ export default class ChatAPI {
 
         const payload = {
             message,
-            idChat: this.chatId || null  // Если нет chatId — отправляем null
+            idChat: this.chatId || null
         };
 
         let retries = 0;
@@ -58,9 +62,8 @@ export default class ChatAPI {
 
                         buffer += decoder.decode(value, { stream: true });
 
-                        // Обрабатываем каждую полную строку (каждый JSON)
                         let lines = buffer.split('\n');
-                        buffer = lines.pop(); // Последняя — неполная, оставляем в буфере
+                        buffer = lines.pop();
 
                         for (const line of lines) {
                             const trimmed = line.trim();
@@ -75,15 +78,11 @@ export default class ChatAPI {
                                     }
                                     if (event.done) {
                                         onDone?.();
-                                        return; // Завершаем, больше не читаем
+                                        return;
                                     }
                                 }
 
                                 else if (event.type === 'Link') {
-                                    // Можно передать ссылку как особый тип
-                                    // Например: onChunk(`[LINK]${event.response}[/LINK]`);
-                                    // Или отдельный обработчик
-                                    // Пока просто передаём как есть (или игнорируем)
                                     onChunk(event.response);
                                 }
 
@@ -91,19 +90,17 @@ export default class ChatAPI {
                                     this.saveChatId(event.response);
                                     if (event.done) {
                                         onDone?.();
-                                        return; // Это последнее сообщение
+                                        return;
                                     }
                                 }
 
                             } catch (parseError) {
                                 console.warn('Не удалось распарсить JSON:', trimmed);
-                                // Можно передать как обычный текст, если нужно
-                                // onChunk(trimmed);
+
                             }
                         }
                     }
 
-                    // После завершения чтения — если остался неполный JSON
                     if (buffer.trim()) {
                         try {
                             const event = JSON.parse(buffer.trim());
@@ -119,7 +116,7 @@ export default class ChatAPI {
                         }
                     }
 
-                    onDone?.(); // На всякий случай
+                    onDone?.();
                     return;
 
                 } catch (error) {
@@ -130,7 +127,7 @@ export default class ChatAPI {
                         return onError?.(error);
                     }
 
-                    // Экспоненциальная задержка
+
                     await new Promise(r => setTimeout(r, 1000 * retries));
                 }
             }

@@ -1,6 +1,6 @@
 {
     "name": "@artikus13/ai-chat-widget",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "AI chat widget for websites, works with WordPress",
     "main": "dist/chat.js",
     "module": "dist/chat.es.js",

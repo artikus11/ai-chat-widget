@@ -43,28 +43,38 @@ https://unpkg.com/ai-chat-widget@1.0.0/dist/chat.js
 
 ```js
 const chat = new AIChat({
-  container: '#ai-chat',
-  apiUrl: 'https://your-ai-api.com/chat',
-  greeting: 'Привет! Чем могу помочь?',
-  placeholder: 'Напишите сообщение...',
-  streaming: true,
-  theme: 'light'
+  apiOptions: {
+    url: 'https://your-ai-api.com/chat',
+    greeting: 'Привет! Чем могу помочь?'
+  },
+  themeOptions: {
+    color: '#fff',
+    size: 'large'
+  },
+  selectorsOptions: {
+    container: '#ai-chat',
+    selectors: { /* ... */ },
+    classes: { /* ... */ }
+  },
+  delayOptions: {
+    greetDelay: 600,
+    followupDelay: 15000
+  }
 });
-
-chat.init();
 ```
 ## Параметры
 
-| Параметр    | Тип     | По умолчанию | Описание                     |
-|-------------|---------|--------------|------------------------------|
-| container   | string  | — (обязательный) | CSS-селектор контейнера      |
-| apiUrl      | string  | — (обязательный) | URL вашего API               |
-| greeting    | string  | null         | Приветственное сообщение     |
-| placeholder | string  | "Спросите что-нибудь" | Текст-подсказка в поле ввода |
-| streaming   | boolean | true         | Включить потоковый вывод     |
-| autoFocus   | boolean | true         | Автофокус на поле ввода      |
-| maxHeight   | number  | 400          | Максимальная высота контейнера |
-| theme       | string  | "light"      | Тема оформления (light/dark) |
+| Группа         | Параметр      | Тип     | По умолчанию | Описание                     |
+|---------------|--------------|---------|--------------|------------------------------|
+| apiOptions    | url          | string  | — (обязательный) | URL вашего API               |
+| apiOptions    | greeting     | string  | null         | Приветственное сообщение     |
+| themeOptions  | color        | string  | #fff         | Цвет окна чата               |
+| themeOptions  | size         | string  | 'large'      | Размер шрифта/окна           |
+| selectorsOptions | container  | string  | #ai-chat     | CSS-селектор контейнера      |
+| selectorsOptions | selectors  | object  | см. исходник | Кастомные селекторы элементов|
+| selectorsOptions | classes    | object  | см. исходник | Кастомные CSS-классы         |
+| delayOptions  | greetDelay   | number  | 600          | Задержка автоприветствия (мс) |
+| delayOptions  | followupDelay| number  | 15000        | Задержка follow-up сообщения (мс) |
 
 
 ## Поддержка WordPress

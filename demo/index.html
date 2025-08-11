@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Chat Widget — Демо</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, sans-serif;
+            background: #f0f2f5;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 40px auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h3>💬 AI Чат-бот — Песочница</h3>
+        <p>Тестовая среда для разработки. Изменения в JS — мгновенно.</p>
+        <div id="chat-container" class="chatbox">
+
+            <!-- Кнопка открытия -->
+            <button class="chatbox__toggle">💬</button>
+
+            <!-- Основное окно -->
+            <div class="chatbox__wrapper">
+                <div class="chatbox__header">
+                    <span>Лолита — ваш помощник</span>
+                    <button class="chatbox__close">×</button>
+                </div>
+                <div class="chatbox__messages-inner"></div>
+                <form class="chatbox__input-form">
+                    <textarea class="chatbox__textarea" placeholder="Напишите сообщение..." rows="1"></textarea>
+                    <!-- <button type="submit" class="chatbox__send-button">➤</button> -->
+                    <button type="submit" class="chatbox__send-button" tabindex="0" aria-label="Send">
+                        <span class="chatbox__send-icon"></span>
+                    </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module">
+        import AIChat from '../src/js/index.js';
+
+        new AIChat({
+            container: '#chat-container',
+            apiUrl: 'https://chat.varman.pro/api/chat',
+            greeting: 'Привет! Я Лолита. Чем могу помочь???'
+        });
+    </script>
+</body>
+
+</html>

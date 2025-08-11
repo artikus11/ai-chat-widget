@@ -1,0 +1,15 @@
+@use "media-mixin";
+
+// :root {
+// }
+
+// Базовые переменные
+$primary-color: #f00075; // Цвет главной темы
+$secondary-color: #f8f9fa; // Цвет фона чата
+$border-radius: 12px; // Радиус скругления
+$font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$chat-width: media-mixin.rem(400); // Ширина чата
+$chat-height: media-mixin.rem(580); // Высота чата
+
+$chat-offset-right: media-mixin.rem(20);
+$chat-offset-bottom: media-mixin.rem(120);

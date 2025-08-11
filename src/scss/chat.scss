@@ -1,0 +1,420 @@
+@use "sass:color";
+@use "variables";
+@use "media-mixin";
+
+
+$primary: #0056b3;
+$radius: 12px;
+$spacing: 16px;
+
+.chatbox {
+    &__wrapper {
+        display: none;
+        position: fixed;
+        bottom: variables.$chat-offset-bottom;
+        right: variables.$chat-offset-right;
+        width: variables.$chat-width;
+        height: variables.$chat-height;
+        background: variables.$secondary-color;
+        border-radius: variables.$border-radius;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        z-index: 10000;
+
+        &--open {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+
+    &__toggle {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: variables.$primary-color;
+        color: white;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    &__header {
+        padding: $spacing;
+        background: variables.$primary-color;
+        color: white;
+        font-size: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    &__close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    &__messages-inner {
+        flex: 1;
+        overflow-y: auto;
+        padding: $spacing;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: #f9f9f9;
+    }
+
+    &__message {
+        display: flex;
+        gap: 8px;
+        max-width: 80%;
+
+        &--user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        &-content {
+            display: flex;
+            gap: 8px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: media-mixin.rem(6);
+            font-size: 14px;
+        }
+
+        &-text {
+            p {
+                margin: 0 0 0.8em 0;
+            }
+
+            strong {
+                font-weight: 600;
+                color: #2c3e50;
+            }
+
+            em {
+                font-style: italic;
+                color: #555;
+            }
+
+            small {
+                font-size: 0.9em;
+            }
+
+            // === Ссылки ===
+            a {
+                color: #0066cc;
+                text-decoration: none;
+                border-bottom: 1px dashed #0066cc;
+                padding-bottom: 1px;
+
+                &:hover {
+                    border-bottom-style: solid;
+                    color: #0055aa;
+                }
+
+                // Открывать внешние ссылки в новой вкладке (через JS лучше, но стили — на всякий)
+                &[target="_blank"]::after {
+                    content: " ↗";
+                    font-size: 0.8em;
+                    opacity: 0.7;
+                }
+            }
+
+            // === Списки ===
+            ul,
+            ol {
+                margin: 0.8em 0;
+                padding-left: 1.4em;
+
+                // Вложенные списки — меньше отступ
+                ul,
+                ol {
+                    margin-top: 0.4em;
+                    margin-bottom: 0.4em;
+                }
+            }
+
+            ul {
+                list-style: disc;
+
+                &.task-list {
+                    list-style: none;
+                    padding-left: 0;
+
+                    li {
+                        position: relative;
+                        padding-left: 24px;
+                        margin-bottom: 0.4em;
+
+                        &::before {
+                            content: '';
+                            position: absolute;
+                            left: 0;
+                            top: 0.4em;
+                            width: 14px;
+                            height: 14px;
+                            border: 1.5px solid #999;
+                            border-radius: 3px;
+                            background: #fff;
+                        }
+                    }
+
+                    li[data-type="taskListChecked"]::before {
+                        background: #0066cc;
+                        border-color: #0066cc;
+
+                        &::after {
+                            content: '✓';
+                            color: white;
+                            font-weight: bold;
+                            font-size: 10px;
+                            position: absolute;
+                            left: 3px;
+                            top: 1px;
+                        }
+                    }
+                }
+            }
+
+            ol {
+                list-style: decimal;
+
+                li {
+                    margin-bottom: 0.4em;
+                }
+            }
+
+            // === Цитаты ===
+            blockquote {
+                margin: 0.8em 0;
+                padding: 0.6em 1em;
+                border-left: 4px solid #ddd;
+                background-color: #f9f9f9;
+                color: #666;
+                font-style: italic;
+
+                p {
+                    margin: 0;
+                }
+            }
+
+            // === Код ===
+            code {
+                font-family: 'Courier New', monospace;
+                background-color: #f0f0f0;
+                color: #c53636;
+                padding: 0.2em 0.4em;
+                border-radius: 3px;
+                font-size: 0.95em;
+            }
+
+            pre {
+                margin: 0.8em 0;
+                padding: 1em;
+                background-color: #f5f5f5;
+                border: 1px solid #e0e0e0;
+                border-radius: 5px;
+                overflow-x: auto;
+                font-size: 0.9em;
+
+                code {
+                    background: none;
+                    color: inherit;
+                    padding: 0;
+                    font-size: inherit;
+                    white-space: pre;
+                }
+            }
+
+            // === Заголовки (если ИИ их использует) ===
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6 {
+                margin: 1.2em 0 0.6em 0;
+                color: #1a2b3c;
+                font-weight: 600;
+
+                &:first-child {
+                    margin-top: 0;
+                }
+            }
+
+            h1 {
+                font-size: 1.4em;
+            }
+
+            h2 {
+                font-size: 1.3em;
+            }
+
+            h3 {
+                font-size: 1.2em;
+            }
+
+            h4 {
+                font-size: 1.1em;
+            }
+
+            h5,
+            h6 {
+                font-size: 1em;
+            }
+
+            // === Таблицы ===
+            table {
+                margin: 0.8em 0;
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.95em;
+
+                th,
+                td {
+                    padding: 8px 12px;
+                    border: 1px solid #ddd;
+                    text-align: left;
+                    vertical-align: top;
+                }
+
+                th {
+                    background-color: #f0f0f0;
+                    font-weight: 600;
+                }
+
+                tr:nth-child(even) {
+                    background-color: #f9f9f9;
+                }
+            }
+
+            // === Горизонтальная линия ===
+            hr {
+                border: none;
+                border-top: 1px solid #ddd;
+                margin: 1em 0;
+            }
+
+            // === Изображения (если вдруг разрешены) ===
+            img {
+                max-width: 100%;
+                height: auto;
+                border-radius: 4px;
+                margin: 0.5em 0;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        &-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-size: cover;
+        }
+    }
+
+    &__input-form {
+        display: flex;
+        padding: 8px;
+        border-top: 1px solid #eee;
+        background: white;
+    }
+
+    &__textarea {
+        flex: 1;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        padding: 10px 14px;
+        resize: none;
+        outline: none;
+        font-size: 14px;
+        max-height: 120px;
+    }
+
+    &__send-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: media-mixin.rem(12);
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: media-mixin.rem(8);
+        background: variables.$primary-color;
+
+        &:focus,
+        &:hover {
+            opacity: 0.8;
+            background: #f0dbe5;
+        }
+
+        .chatbox__send-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            mask-image: url(data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjE2IiB3aWR0aD0iMTYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNsaXBQYXRoIGlkPSJhIj48cGF0aCBkPSJNMTQuODQuMDU0YS44NjQuODY0IDAgMDExLjEwNyAxLjEwN2wtNS4xODkgMTQuMjdhLjg2NC44NjQgMCAwMS0xLjQyMy4zMTZMNi4xNSAxMi41NmEuODY0Ljg2NCAwIDAxLS4wNTYtMS4xNmw3LjAzLTguNTIyTDQuNiA5LjkwOGEuODY0Ljg2NCAwIDAxLTEuMTYtLjA1NkwuMjUyIDYuNjY2QS44NjQuODY0IDAgMDEuNTcgNS4yNDN6Ii8+PC9jbGlwUGF0aD48ZyBjbGlwLXBhdGg9InVybCgjYSkiIHRyYW5zZm9ybT0icm90YXRlKDQ1IDYuNTE2IDQuMzQxKSI+PHBhdGggZD0iTTAgMGgxNnYxNkgweiIvPjwvZz48L3N2Zz4=);
+            mask-size: contain;
+            mask-repeat: no-repeat;
+            mask-position: center;
+            background-color: currentColor;
+        }
+    }
+
+    &__send-button {
+        background-color: variables.$primary-color;
+    }
+
+    &__typing-dots {
+        display: flex;
+        align-items: center;
+        gap: 4px; // расстояние между точками
+
+        &::before,
+        &::after,
+        >span {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #7a7575;
+            animation: typingDots 1.4s infinite ease-in-out both;
+        }
+
+        >span {
+            animation-delay: 0.2s;
+        }
+
+        &::before {
+            animation-delay: 0s;
+        }
+
+        &::after {
+            animation-delay: 0.4s;
+        }
+    }
+
+    @keyframes typingDots {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-5px);
+        }
+    }
+}

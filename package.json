@@ -19,7 +19,9 @@
         "build:es": "cross-env BUILD_FORMAT=es vite build",
         "build:umd": "cross-env BUILD_FORMAT=umd vite build",
         "preview": "vite preview",
-        "publish": "npm run build && npm publish --access public"
+        "publish": "npm run build && npm publish --access public",
+        "lint": "eslint ./src/js --ext .js",
+        "format": "prettier --write \"src/js/**/*.js\""
     },
     "keywords": [
         "chat",
@@ -36,7 +38,12 @@
     "bugs": "https://github.com/artikus11/ai-chat-widget/issues",
     "license": "MIT",
     "devDependencies": {
+        "@eslint/js": "^9.33.0",
         "cross-env": "^7.0.3",
+        "eslint": "^9.33.0",
+        "eslint-config-prettier": "^10.1.8",
+        "globals": "^16.3.0",
+        "prettier": "^3.6.2",
         "sass": "^1.90.0",
         "sass-embedded": "^1.90.0",
         "vite": "^5.0.0"

@@ -11,7 +11,7 @@
     "exports": {
         ".": {
             "import": "./dist/chat.es.js",
-            "require": "./dist/chat.js",
+            "require": "./dist/chat.js"
         },
         "./dist/chat.css": "./dist/chat.css"
     },

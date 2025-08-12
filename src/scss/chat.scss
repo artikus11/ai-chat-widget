@@ -326,17 +326,18 @@ $spacing: 16px;
     }
 
     &__input-form {
-        display: flex;
+        display: grid;
         padding: 8px;
         border-top: 1px solid #eee;
-        background: white;
+        gap: 6px;
+        align-items: flex-start;
+        grid-template-columns: 1fr auto;
     }
 
     &__textarea {
-        flex: 1;
         border: 1px solid #ddd;
-        border-radius: 20px;
-        padding: 10px 14px;
+        border-radius: media-mixin.rem(8);
+        padding: media-mixin.rem(12) 14px;
         resize: none;
         outline: none;
         font-size: 14px;
@@ -369,13 +370,11 @@ $spacing: 16px;
             mask-size: contain;
             mask-repeat: no-repeat;
             mask-position: center;
-            background-color: currentColor;
+            background-color: #fff;
         }
     }
 
-    &__send-button {
-        background-color: variables.$primary-color;
-    }
+
 
     &__typing-dots {
         display: flex;

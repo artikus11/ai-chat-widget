@@ -1,36 +1,57 @@
 import { defineConfig } from 'vite';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { env } from 'node:process';
 
-export default defineConfig({
-    root: 'demo', // папка с демо-страницей
-    server: {
-        port: 3000,
-        open: true
-    },
-    build: {
-        outDir: '../dist', // собираем в корневую dist
-        emptyOutDir: true,
-        rollupOptions: {
-            input: 'src/js/index.js', // точка входа — index.js в js/
-            output: {
-                format: 'umd',
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default defineConfig(({ command }) => {
+    const format = env.BUILD_FORMAT || 'es';
+
+    return {
+        root: 'demo',
+
+        // optimizeDeps только в dev
+        ...(command === 'serve' && {
+            optimizeDeps: {
+                include: ['dompurify', 'marked']
+            }
+        }),
+
+        server: {
+            port: 3000,
+            open: true
+        },
+
+        build: {
+            outDir: path.resolve(__dirname, 'dist'),
+            emptyOutDir: false, // будет очищено через rimraf
+
+            lib: {
+                entry: path.resolve(__dirname, 'src/js/index.js'),
                 name: 'AIChat',
-                entryFileNames: 'chat.js' // выход: dist/chat.js
+                formats: [format],
+                fileName: () => {
+                    return format === 'umd' ? 'chat.js' : 'chat.es.js';
+                }
+            }
+        },
+
+        css: {
+            preprocessorOptions: {
+                scss: {
+                    api: 'modern',
+                    silenceDeprecations: ['legacy-js-api'],
+                    includePaths: [path.resolve(__dirname, 'src/scss')]
+                }
+            }
+        },
+
+        resolve: {
+            alias: {
+                '@js': path.resolve(__dirname, 'src/js'),
+                '@scss': path.resolve(__dirname, 'src/scss')
             }
         }
-    },
-    css: {
-        preprocessorOptions: {
-            scss: {
-                api: 'modern', // ← ключевая строка: используем современный API
-                silenceDeprecations: ['legacy-js-api'], // ← убираем предупреждение
-                includePaths: ['src/scss']
-            }
-        }
-    },
-    resolve: {
-        alias: {
-            '@js': '/src/js',
-            '@scss': '/src/scss'
-        }
-    }
+    };
 });

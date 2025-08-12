@@ -57,12 +57,26 @@ $spacing: 16px;
     }
 
     &__close {
-        background: none;
+        outline: none;
         border: none;
-        color: white;
-        font-size: 18px;
         cursor: pointer;
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        mask-image: url(data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjIwIiB3aWR0aD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTE5LjM5OSAyLjA0YTEuMzM0IDEuMzM0IDAgMDAtMi4yOS0uOTNsLTcuMDU2IDcuMDU3TDIuOTk1IDEuMTFBMS4zMzMgMS4zMzMgMCAxMDEuMTEgMi45OTVsNy4wNTcgNy4wNThMMS4xMSAxNy4xMWExLjMzNCAxLjMzNCAwIDEwMS44ODUgMS44ODVsNy4wNTgtNy4wNTcgNy4wNTcgNy4wNTdhMS4zMzQgMS4zMzQgMCAxMDEuODg1LTEuODg1bC03LjA1Ny03LjA1NyA3LjA1Ny03LjA1OGExLjMzMiAxLjMzMiAwIDAwLjQwNC0uOTU1eiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==);
+        mask-size: contain;
+        mask-repeat: no-repeat;
+        mask-position: center;
+        background-color: #fff;
+        opacity: 0.6;
+
+        &:focus,
+        &:hover {
+            opacity: 1;
+        }
     }
+
+
 
     &__messages-inner {
         flex: 1;
@@ -374,7 +388,9 @@ $spacing: 16px;
         }
     }
 
-
+    &__send-button {
+        background-color: variables.$primary-color;
+    }
 
     &__typing-dots {
         display: flex;

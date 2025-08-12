@@ -65,10 +65,27 @@ export default class ChatUI {
 
     autoResize() {
         const ta = this.elements.textarea;
-        if (ta) {
-            ta.style.height = 'auto';
-            ta.style.height = `${Math.min(ta.scrollHeight, 120)}px`;
-        }
+        if (!ta) return;
+
+        const style = window.getComputedStyle(ta);
+        const paddingTop = parseFloat(style.paddingTop);
+        const paddingBottom = parseFloat(style.paddingBottom);
+        const borderTop = parseFloat(style.borderTopWidth);
+        const borderBottom = parseFloat(style.borderBottomWidth);
+
+        const verticalPaddings = paddingTop + paddingBottom;
+        const verticalBorders = borderTop + borderBottom;
+        const totalVertical = verticalPaddings + verticalBorders;
+
+        const MIN_HEIGHT = 40;
+        const MAX_HEIGHT = 120;
+
+        ta.style.height = 'auto';
+
+        const contentHeight = ta.scrollHeight - totalVertical;
+        const targetHeight = Math.max(MIN_HEIGHT, Math.min(contentHeight, MAX_HEIGHT));
+
+        ta.style.height = `${targetHeight + totalVertical}px`;
     }
 
     addMessage(text, isUser, isHtml = false) {
@@ -111,7 +128,7 @@ export default class ChatUI {
         this.typingEl.innerHTML = `
         <div class="${this.classes.content}">
             <div class="${this.classes.text}">
-                <span class="${this.classes.typingDots}"></span>
+                <span class="${this.classes.typingDots}"><span></span></span>
             </div>
         </div>
     `;

@@ -67,7 +67,6 @@ export default class ChatAPI {
                             onDone?.();
                         }, 0);
 
-                        // Вызываем onError, но не падаем в catch
                         if (onError) {
                             onError(new Error(errorMsg));
                         }

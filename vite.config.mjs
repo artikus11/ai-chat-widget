@@ -11,7 +11,6 @@ export default defineConfig(({ command }) => {
     return {
         root: 'demo',
 
-        // optimizeDeps только в dev
         ...(command === 'serve' && {
             optimizeDeps: {
                 include: ['dompurify', 'marked']

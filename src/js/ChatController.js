@@ -38,10 +38,8 @@ export default class ChatController {
                     if (this.currentResponse.trim()) {
                         let cleaned = this.normalizeMarkdown(this.currentResponse);
 
-                        // Опционально: сделать ссылки кликабельными
                         cleaned = cleaned.replace(/(https?:\/\/[^\s]+)/g, '[$1]($1)');
 
-                        // Парсинг в HTML
                         const html = DOMPurify.sanitize(marked.parse(cleaned));
 
                         this.ui.addMessage(html, false, true);

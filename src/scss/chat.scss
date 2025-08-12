@@ -356,6 +356,9 @@ $spacing: 16px;
         outline: none;
         font-size: 14px;
         max-height: 120px;
+        overflow: inherit;
+        line-height: 1.4;
+        box-sizing: border-box;
     }
 
     &__send-button {
@@ -392,6 +395,35 @@ $spacing: 16px;
         background-color: variables.$primary-color;
     }
 
+    // &__typing-dots {
+    //     display: flex;
+    //     align-items: center;
+    //     gap: 4px; // расстояние между точками
+
+    //     &::before,
+    //     &::after,
+    //     >span {
+    //         content: '';
+    //         width: 6px;
+    //         height: 6px;
+    //         border-radius: 50%;
+    //         background-color: #7a7575;
+    //         animation: typingDots 1.4s infinite ease-in-out both;
+    //     }
+
+    //     >span {
+    //         animation-delay: 0.2s;
+    //     }
+
+    //     &::before {
+    //         animation-delay: 0s;
+    //     }
+
+    //     &::after {
+    //         animation-delay: 0.4s;
+    //     }
+    // }
+
     &__typing-dots {
         display: flex;
         align-items: center;
@@ -405,7 +437,7 @@ $spacing: 16px;
             height: 6px;
             border-radius: 50%;
             background-color: #7a7575;
-            animation: typingDots 1.4s infinite ease-in-out both;
+            animation: blinkDots 1.4s infinite ease-in-out;
         }
 
         >span {
@@ -418,6 +450,19 @@ $spacing: 16px;
 
         &::after {
             animation-delay: 0.4s;
+        }
+    }
+
+    @keyframes blinkDots {
+
+        0%,
+        40%,
+        100% {
+            opacity: 0.3;
+        }
+
+        20% {
+            opacity: 1;
         }
     }
 

@@ -61,9 +61,7 @@ export default class ChatAPI {
                             // Если JSON не пришёл, оставляем дефолтное сообщение
                         }
 
-
                         onChunk(`❌ ${errorMsg}`);
-
 
                         setTimeout(() => {
                             onDone?.();

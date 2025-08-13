@@ -24,7 +24,7 @@ export default defineConfig(({ command }) => {
 
         build: {
             outDir: path.resolve(__dirname, 'dist'),
-            emptyOutDir: false, // будет очищено через rimraf
+            emptyOutDir: false,
 
             lib: {
                 entry: path.resolve(__dirname, 'src/js/index.js'),
@@ -32,6 +32,17 @@ export default defineConfig(({ command }) => {
                 formats: [format],
                 fileName: () => {
                     return format === 'umd' ? 'chat.js' : 'chat.es.js';
+                }
+            },
+            cssCodeSplit: true,
+            rollupOptions: {
+                output: {
+                    assetFileNames: (assetInfo) => {
+                        if (assetInfo.name?.endsWith('.css')) {
+                            return 'chat.css';
+                        }
+                        return 'assets/[name]-[hash][extname]';
+                    }
                 }
             }
         },

@@ -395,39 +395,10 @@ $spacing: 16px;
         background-color: variables.$primary-color;
     }
 
-    // &__typing-dots {
-    //     display: flex;
-    //     align-items: center;
-    //     gap: 4px; // расстояние между точками
-
-    //     &::before,
-    //     &::after,
-    //     >span {
-    //         content: '';
-    //         width: 6px;
-    //         height: 6px;
-    //         border-radius: 50%;
-    //         background-color: #7a7575;
-    //         animation: typingDots 1.4s infinite ease-in-out both;
-    //     }
-
-    //     >span {
-    //         animation-delay: 0.2s;
-    //     }
-
-    //     &::before {
-    //         animation-delay: 0s;
-    //     }
-
-    //     &::after {
-    //         animation-delay: 0.4s;
-    //     }
-    // }
-
     &__typing-dots {
         display: flex;
         align-items: center;
-        gap: 4px; // расстояние между точками
+        gap: 4px;
 
         &::before,
         &::after,
@@ -466,15 +437,4 @@ $spacing: 16px;
         }
     }
 
-    @keyframes typingDots {
-
-        0%,
-        100% {
-            transform: translateY(0);
-        }
-
-        50% {
-            transform: translateY(-5px);
-        }
-    }
 }

@@ -28,7 +28,9 @@ export default class ChatAPI {
     }
 
     async sendMessage(message, onChunk, onDone, onError) {
-        if (this.abortController) this.abortController.abort();
+        if (this.abortController) {
+            this.abortController.abort();
+        }
         this.abortController = new AbortController();
 
         const payload = {
@@ -80,7 +82,9 @@ export default class ChatAPI {
 
                     while (true) {
                         const { value, done } = await reader.read();
-                        if (done && !buffer.trim()) break;
+                        if (done && !buffer.trim()) {
+                            break;
+                        }
 
                         buffer += decoder.decode(value, { stream: true });
 
@@ -89,7 +93,9 @@ export default class ChatAPI {
 
                         for (const line of lines) {
                             const trimmed = line.trim();
-                            if (!trimmed) continue;
+                            if (!trimmed) {
+                                continue;
+                            }
 
                             try {
                                 const event = JSON.parse(trimmed);
@@ -135,7 +141,9 @@ export default class ChatAPI {
                     onDone?.();
                     return;
                 } catch (error) {
-                    if (error.name === 'AbortError') return;
+                    if (error.name === 'AbortError') {
+                        return;
+                    }
 
                     retries++;
                     if (retries > maxRetries) {
@@ -145,7 +153,7 @@ export default class ChatAPI {
                         return onError?.(error);
                     }
 
-                    await new Promise((r) => setTimeout(r, 1000 * retries));
+                    await new Promise(r => setTimeout(r, 1000 * retries));
                 }
             }
         };
@@ -154,6 +162,8 @@ export default class ChatAPI {
     }
 
     abort() {
-        if (this.abortController) this.abortController.abort();
+        if (this.abortController) {
+            this.abortController.abort();
+        }
     }
 }

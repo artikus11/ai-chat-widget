@@ -23,8 +23,7 @@ export default class ChatUI {
         this.container = container;
         this.selectors = { ...ChatUI.defaultSelectors, ...(options.selectors || {}) };
         this.classes = { ...ChatUI.defaultClasses, ...(options.classes || {}) };
-        if (options.color) this.container.style.backgroundColor = options.color;
-        if (options.size) this.container.style.fontSize = options.size;
+
         this.elements = this.selectElements();
         this.typingEl = null;
     }
@@ -41,7 +40,7 @@ export default class ChatUI {
     }
 
     bindEvents(onSubmit, onToggle) {
-        this.elements.inputForm?.addEventListener('submit', (e) => {
+        this.elements.inputForm?.addEventListener('submit', e => {
             e.preventDefault();
             const text = this.elements.textarea.value.trim();
             if (text) {
@@ -51,7 +50,7 @@ export default class ChatUI {
             }
         });
 
-        this.elements.textarea?.addEventListener('keydown', (e) => {
+        this.elements.textarea?.addEventListener('keydown', e => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 this.elements.inputForm?.dispatchEvent(new Event('submit'));
@@ -65,7 +64,9 @@ export default class ChatUI {
 
     autoResize() {
         const ta = this.elements.textarea;
-        if (!ta) return;
+        if (!ta) {
+            return;
+        }
 
         const style = window.getComputedStyle(ta);
         const paddingTop = parseFloat(style.paddingTop);
@@ -153,11 +154,12 @@ export default class ChatUI {
 
     finalizeTypingAsMessage() {
         if (this.typingEl) {
-            // Убираем анимацию (точки)
             const dots = this.typingEl.querySelector(`.${this.classes.typingDots}`);
+
             if (dots) {
                 dots.remove();
             }
+
             this.typingEl = null;
         }
     }

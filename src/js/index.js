@@ -32,7 +32,6 @@ class AIChat {
     }
 
     init() {
-
         const ui = new ChatUI(this.container, {
             ...this.themeOptions,
             ...this.selectorsOptions,
@@ -46,14 +45,15 @@ class AIChat {
         });
 
         ui.bindEvents(
-            (text) => controller.sendMessage(text),
+            text => controller.sendMessage(text),
             () => controller.toggle()
         );
 
-
         setTimeout(() => {
             const toggle = this.container.querySelector(ui.selectors.toggle);
-            if (toggle) toggle.style.display = 'flex';
+            if (toggle) {
+                toggle.style.display = 'flex';
+            }
         }, this.delayOptions.toggleDelay);
     }
 }

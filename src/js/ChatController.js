@@ -16,7 +16,10 @@ export default class ChatController {
     }
 
     async sendMessage(text, isUserInitiated = true) {
-        if (!text.trim()) return;
+
+        if (!text.trim()) {
+            return;
+        }
 
         if (isUserInitiated) {
             this.ui.addMessage(text, true);
@@ -28,7 +31,7 @@ export default class ChatController {
         try {
             await this.api.sendMessage(
                 text,
-                (chunk) => {
+                chunk => {
                     this.currentResponse += chunk;
                     this.ui.updateTyping(this.currentResponse);
                 },
@@ -46,7 +49,7 @@ export default class ChatController {
                         this.currentResponse = '';
                     }
                 },
-                (error) => {
+                error => {
                     this.ui.hideTyping();
                     this.ui.addMessage(`Ошибка: ${error.message}`, false);
                 }
@@ -58,7 +61,9 @@ export default class ChatController {
     }
 
     autoGreet() {
-        if (this.hasGreeted) return;
+        if (this.hasGreeted) {
+            return;
+        }
 
         this.greetingTimer = setTimeout(() => {
             this.ui.showTyping();
@@ -91,11 +96,15 @@ export default class ChatController {
     toggle() {
         if (this.ui.isOpen()) {
             this.ui.close();
-            if (this.greetingTimer) clearTimeout(this.greetingTimer);
-            if (this.followupTimer) clearTimeout(this.followupTimer);
+            if (this.greetingTimer) {
+                clearTimeout(this.greetingTimer);
+            }
+            if (this.followupTimer) {
+                clearTimeout(this.followupTimer);
+            }
         } else {
             this.ui.open();
-            if (!this.hasGreeted) this.autoGreet();
+            this.autoGreet();
         }
     }
 

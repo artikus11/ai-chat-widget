@@ -5,6 +5,7 @@ export default class ChatUI {
         closeButton: '.chatbox__close',
         messages: '.chatbox__messages-inner',
         textarea: '.chatbox__textarea',
+        sendButton: '.chatbox__send-button',
         inputForm: '.chatbox__input-form',
     };
 
@@ -35,6 +36,7 @@ export default class ChatUI {
             closeButton: this.container.querySelector(this.selectors.closeButton),
             messages: this.container.querySelector(this.selectors.messages),
             textarea: this.container.querySelector(this.selectors.textarea),
+            sendButton: this.container.querySelector(this.selectors.sendButton),
             inputForm: this.container.querySelector(this.selectors.inputForm),
         };
     }
@@ -113,6 +115,31 @@ export default class ChatUI {
         this.scrollToBottom();
     }
 
+    addLink(url) {
+        // Проверяем, валидна ли ссылка
+        if (!url || !/^https?:\/\//.test(url)) { return; }
+        console.log(url);
+        const el = document.createElement('div');
+        el.classList.add(this.classes.message);
+        el.classList.add(this.classes.operator);
+
+        const content = document.createElement('div');
+        content.className = this.classes.content;
+
+        const linkEl = document.createElement('a');
+        linkEl.href = url;
+        linkEl.target = '_blank';
+        linkEl.rel = 'noopener noreferrer';
+        linkEl.className = 'chatbox__link'; // можно стилизовать отдельно
+        linkEl.textContent = new URL(url).hostname; // или полный URL: url
+
+        content.appendChild(linkEl);
+        el.appendChild(content);
+
+        this.elements.messages?.appendChild(el);
+        this.scrollToBottom();
+    }
+
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
@@ -176,5 +203,17 @@ export default class ChatUI {
 
     isOpen() {
         return this.elements.wrapper?.classList.contains(this.classes.wrapperOpen);
+    }
+
+    disabledForm() {
+        this.elements.textarea.disabled = true
+        this.elements.sendButton.disabled = true
+
+        console.log(this.elements.sendButton);
+    }
+
+    activeForm() {
+        this.elements.textarea.disabled = false;
+        this.elements.sendButton.disabled = false;
     }
 }

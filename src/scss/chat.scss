@@ -131,7 +131,8 @@ $spacing: 16px;
                 color: #0066cc;
                 text-decoration: none;
                 border-bottom: 1px dashed #0066cc;
-                padding-bottom: 1px;
+                padding-bottom: 0;
+                line-height: 1.4;
 
                 &:hover {
                     border-bottom-style: solid;
@@ -143,6 +144,13 @@ $spacing: 16px;
                     content: " ↗";
                     font-size: 0.8em;
                     opacity: 0.7;
+                }
+            }
+
+            .links__list {
+                li {
+                    padding-bottom: media-mixin.rem(6);
+                    list-style-type: "→ ";
                 }
             }
 
@@ -374,7 +382,8 @@ $spacing: 16px;
         background: variables.$primary-color;
 
         &:focus,
-        &:hover {
+        &:hover,
+        &:disabled {
             opacity: 0.8;
             background: #f0dbe5;
         }

@@ -27,7 +27,7 @@ export default class ChatAPI {
         }
     }
 
-    async sendMessage(message, onChunk, onDone, onError) {
+    async sendRequest(message, onChunk, onDone, onError) {
         if (this.abortController) {
             this.abortController.abort();
         }
@@ -102,14 +102,14 @@ export default class ChatAPI {
 
                                 if (event.type === 'Message') {
                                     if (event.response) {
-                                        onChunk(event.response);
+                                        onChunk(event);
                                     }
                                     if (event.done) {
                                         onDone?.();
                                         return;
                                     }
                                 } else if (event.type === 'Link') {
-                                    onChunk(event.response);
+                                    onChunk(event);
                                 } else if (event.type === 'ChatId') {
                                     this.saveChatId(event.response);
                                     if (event.done) {

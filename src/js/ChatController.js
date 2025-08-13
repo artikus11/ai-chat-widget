@@ -13,10 +13,10 @@ export default class ChatController {
         this.greetingTimer = null;
         this.followupTimer = null;
         this.currentResponse = '';
+        this.links = [];
     }
 
     async sendMessage(text, isUserInitiated = true) {
-
         if (!text.trim()) {
             return;
         }
@@ -24,16 +24,21 @@ export default class ChatController {
         if (isUserInitiated) {
             this.ui.addMessage(text, true);
             this.ui.showTyping();
+            this.ui.disabledForm();
         }
 
         this.currentResponse = '';
 
         try {
-            await this.api.sendMessage(
+            await this.api.sendRequest(
                 text,
                 chunk => {
-                    this.currentResponse += chunk;
-                    this.ui.updateTyping(this.currentResponse);
+                    if (chunk.type === 'Message') {
+                        this.currentResponse += chunk.response;
+                        this.ui.updateTyping(this.currentResponse);
+                    } else if (chunk.type === 'Link') {
+                        this.links.push(chunk.response.trim());
+                    }
                 },
                 () => {
                     this.ui.hideTyping();
@@ -48,12 +53,34 @@ export default class ChatController {
                         this.ui.addMessage(html, false, true);
                         this.currentResponse = '';
                     }
+
+                    if (this.links.length > 0) {
+                        const linksHtml = this.links
+                            .map(link => {
+                                try {
+                                    const url = new URL(link);
+                                    const pathname = url.pathname.replace(/^\/|\/$/g, '');
+                                    const productName = pathname.split('/').pop();
+                                    console.log(productName);
+                                    return `<li><a href="${link}" target="_blank" rel="noopener noreferrer">${productName}</a></li>`;
+                                } catch {
+                                    return `<li><a href="${link}" target="_blank" rel="noopener noreferrer">Ссылка</a></li>`;
+                                }
+                            })
+                            .join('');
+
+                        const listHtml = `<ul class="links__list">${linksHtml}</ul>`;
+                        this.ui.addMessage(listHtml, false, true); // isHtml=true
+                        this.links = []; // Очищаем массив ссылок
+                    }
                 },
                 error => {
                     this.ui.hideTyping();
                     this.ui.addMessage(`Ошибка: ${error.message}`, false);
                 }
             );
+
+            this.ui.activeForm();
         } catch {
             this.ui.hideTyping();
             this.ui.addMessage('Ошибка подключения.', false);

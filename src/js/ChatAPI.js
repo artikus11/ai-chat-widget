@@ -1,9 +1,37 @@
+/**
+ * Вызывается при получении каждого фрагмента данных от сервера.
+ * @callback ChunkCallback
+ * @param {Object} chunk - Объект с данными от сервера
+ * @param {'Message'|'Link'|'ChatId'} chunk.type - Тип пришедшего события
+ * @param {string} [chunk.response] - Текст сообщения или ссылка
+ * @param {boolean} [chunk.done] - Признак завершения потока
+ */
+
+/**
+ * Вызывается, когда ответ от сервера полностью получен.
+ * @callback DoneCallback
+ */
+
+/**
+ * Вызывается при ошибке (сетевой или серверной).
+ * @callback ErrorCallback
+ * @param {Error} error - Объект ошибки
+ */
+
+/**
+ * API для общения с чат-ботом через стриминг (постепенная отправка ответа).
+ * @param {Object} apiOptions - Настройки API
+ * @param {string} apiOptions.url - URL сервера (обязательно)
+ * @param {string} apiOptions.domain - Домен для заголовка X-API-DOMAIN
+ * @param {string} apiOptions.greeting - Приветственное сообщение
+ */
 export default class ChatAPI {
     constructor(apiOptions = {}) {
         if (!apiOptions.url) {
             throw new Error('apiOptions.url is required');
         }
         this.apiUrl = apiOptions.url;
+        this.domain = apiOptions.domain;
         this.greeting = apiOptions.greeting || '';
         this.chatId = this.loadChatId();
         this.abortController = null;
@@ -27,6 +55,15 @@ export default class ChatAPI {
         }
     }
 
+    /**
+     * Отправляет сообщение на сервер и обрабатывает потоковый ответ (streaming).
+     * Поддерживает постепенное получение данных (чанки), завершение и повторные попытки.
+     *
+     * @param {string} message - Текст сообщения от пользователя
+     * @param {Function} onChunk - Вызывается при получении каждого фрагмента (например, часть текста, ссылка)
+     * @param {Function} onDone - Вызывается, когда ответ полностью получен
+     * @param {Function} onError - Вызывается при фатальной ошибке (после всех попыток)
+     */
     async sendRequest(message, onChunk, onDone, onError) {
         if (this.abortController) {
             this.abortController.abort();
@@ -46,7 +83,10 @@ export default class ChatAPI {
                 try {
                     const response = await fetch(this.apiUrl, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-API-DOMAIN': this.domain,
+                        },
                         body: JSON.stringify(payload),
                         signal: this.abortController.signal,
                     });
@@ -87,12 +127,11 @@ export default class ChatAPI {
                         }
 
                         buffer += decoder.decode(value, { stream: true });
-
                         let lines = buffer.split('\n');
                         buffer = lines.pop();
 
                         for (const line of lines) {
-                            const trimmed = line.trim();
+                            let trimmed = this.cleanString(line);
                             if (!trimmed) {
                                 continue;
                             }
@@ -117,8 +156,11 @@ export default class ChatAPI {
                                         return;
                                     }
                                 }
-                            } catch {
+                            } catch (e) {
                                 console.warn('Не удалось распарсить JSON:', trimmed);
+                                console.warn('Ошибка в обработке JSON или onChunk:', e.message);
+                                console.warn('Stack:', e.stack);
+                                console.warn('Raw:', trimmed);
                             }
                         }
                     }
@@ -165,5 +207,16 @@ export default class ChatAPI {
         if (this.abortController) {
             this.abortController.abort();
         }
+    }
+
+    cleanString(str) {
+        str = str.replace(/^\uFEFF/, '');
+        str = str.replace(/[\u00A0\u2028\u2029]/g, ' ');
+        // eslint-disable-next-line no-control-regex
+        str = str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '');
+        str = str.replace(/“|”/g, '"');
+        str = str.replace(/‘|’/g, "'");
+
+        return str.trim();
     }
 }

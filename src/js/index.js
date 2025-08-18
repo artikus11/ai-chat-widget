@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import '../scss/chat.scss';
 import ChatAPI from './ChatAPI.js';
 import ChatUI from './ChatUI.js';
@@ -32,6 +33,8 @@ class AIChat {
     }
 
     init() {
+        this.setupSanitizer();
+
         const ui = new ChatUI(this.container, {
             ...this.themeOptions,
             ...this.selectorsOptions,
@@ -55,6 +58,64 @@ class AIChat {
                 toggle.style.display = 'flex';
             }
         }, this.delayOptions.toggleDelay);
+    }
+
+    setupSanitizer() {
+        DOMPurify.setConfig({
+            ALLOWED_TAGS: [
+                'p',
+                'br',
+                'hr',
+                'h1',
+                'h2',
+                'h3',
+                'h4',
+                'h5',
+                'h6',
+                'strong',
+                'b',
+                'em',
+                'i',
+                'u',
+                'del',
+                'code',
+                'pre',
+                'blockquote',
+                'ul',
+                'ol',
+                'li',
+                'a',
+                'img',
+                'table',
+                'thead',
+                'tbody',
+                'tfoot',
+                'tr',
+                'th',
+                'td',
+                'span',
+            ],
+            ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'title', 'class'],
+            ADD_TAGS: ['span'],
+            ADD_ATTR: ['target', 'rel'],
+        });
+
+        DOMPurify.removeAllHooks();
+        DOMPurify.addHook('afterSanitizeAttributes', node => {
+            if (node.tagName === 'A' && node.target === '_blank') {
+                node.setAttribute('rel', 'noopener noreferrer');
+            }
+
+            if (node.tagName === 'IMG') {
+                const src = node.getAttribute('src');
+                if (
+                    !src ||
+                    (!src.startsWith('https://') && !src.startsWith('data:image/') && !src.startsWith('blob:'))
+                ) {
+                    node.removeAttribute('src');
+                }
+            }
+        });
     }
 }
 

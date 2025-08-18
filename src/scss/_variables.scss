@@ -10,6 +10,10 @@ $border-radius: 12px; // Радиус скругления
 $font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 $chat-width: media-mixin.rem(400); // Ширина чата
 $chat-height: media-mixin.rem(580); // Высота чата
+$chat-width-mobile: media-mixin.rem(320); // Ширина чата
+$chat-height-mobile: media-mixin.rem(500); // Высота чата
 
 $chat-offset-right: media-mixin.rem(20);
 $chat-offset-bottom: media-mixin.rem(120);
+$chat-offset-right: media-mixin.rem(20);
+$chat-offset-bottom-mobile: media-mixin.rem(75);

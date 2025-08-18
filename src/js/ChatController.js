@@ -37,7 +37,7 @@ export default class ChatController {
                         this.currentResponse += chunk.response;
                         this.ui.updateTyping(this.currentResponse);
                     } else if (chunk.type === 'Link') {
-                        this.links.push(chunk.response.trim());
+                        this.links.push(chunk.response);
                     }
                 },
                 () => {
@@ -49,29 +49,29 @@ export default class ChatController {
                         cleaned = cleaned.replace(/(https?:\/\/[^\s]+)/g, '[$1]($1)');
 
                         const html = DOMPurify.sanitize(marked.parse(cleaned));
+                        const finalHtml = this.replaceBrWithSpan(html);
 
-                        this.ui.addMessage(html, false, true);
+                        this.ui.addMessage(finalHtml, false, true);
                         this.currentResponse = '';
                     }
 
                     if (this.links.length > 0) {
                         const linksHtml = this.links
-                            .map(link => {
+                            .map(item => {
                                 try {
-                                    const url = new URL(link);
-                                    const pathname = url.pathname.replace(/^\/|\/$/g, '');
-                                    const productName = pathname.split('/').pop();
-                                    console.log(productName);
-                                    return `<li><a href="${link}" target="_blank" rel="noopener noreferrer">${productName}</a></li>`;
+                                    const url = new URL(item.link.trim());
+                                    const title = item.title?.trim() || 'Подробнее...';
+                                    return `<li><a href="${url.href}" target="_blank" rel="noopener noreferrer">${title}</a></li>`;
                                 } catch {
-                                    return `<li><a href="${link}" target="_blank" rel="noopener noreferrer">Ссылка</a></li>`;
+                                    const safeTitle = item.title?.trim() || 'Ссылка';
+                                    return `<li><a href="#" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault();">${safeTitle}</a></li>`;
                                 }
                             })
                             .join('');
 
                         const listHtml = `<ul class="links__list">${linksHtml}</ul>`;
-                        this.ui.addMessage(listHtml, false, true); // isHtml=true
-                        this.links = []; // Очищаем массив ссылок
+                        this.ui.addMessage(listHtml, false, true);
+                        this.links = [];
                     }
                 },
                 error => {
@@ -144,5 +144,16 @@ export default class ChatController {
         text = text.replace(/^(#{3})\s*(.+?)\s*-\s*/gm, '### $2\n\n');
         text = text.replace(/\n{3,}/g, '\n\n');
         return text.trim();
+    }
+
+    replaceBrWithSpan(html) {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const paragraphs = doc.querySelectorAll('p');
+
+        paragraphs.forEach(p => {
+            p.innerHTML = p.innerHTML.replace(/<br\s*\/?>/g, '<span class="line-break"></span>');
+        });
+
+        return doc.body.innerHTML;
     }
 }

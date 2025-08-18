@@ -12,6 +12,7 @@ $spacing: 16px;
         display: none;
         position: fixed;
         bottom: variables.$chat-offset-bottom;
+
         right: variables.$chat-offset-right;
         width: variables.$chat-width;
         height: variables.$chat-height;
@@ -21,6 +22,12 @@ $spacing: 16px;
         overflow: hidden;
         z-index: 10000;
 
+        @include media-mixin.max_480 {
+            width: variables.$chat-width-mobile;
+            height: variables.$chat-height-mobile;
+            bottom: variables.$chat-offset-bottom-mobile;
+        }
+
         &--open {
             display: flex;
             flex-direction: column;
@@ -29,10 +36,10 @@ $spacing: 16px;
 
     &__toggle {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 60px;
-        height: 60px;
+        bottom: media-mixin.rem(20);
+        right: media-mixin.rem(20);
+        width: media-mixin.rem(60);
+        height: media-mixin.rem(60);
         border-radius: 50%;
         background: variables.$primary-color;
         color: white;
@@ -43,7 +50,15 @@ $spacing: 16px;
         display: none;
         align-items: center;
         justify-content: center;
-        font-size: 24px;
+        font-size: media-mixin.rem(24);
+
+        @include media-mixin.max_480 {
+            bottom: media-mixin.rem(18);
+            right: media-mixin.rem(18);
+            width: media-mixin.rem(40);
+            height: media-mixin.rem(40);
+            font-size: media-mixin.rem(16);
+        }
     }
 
     &__header {
@@ -336,6 +351,10 @@ $spacing: 16px;
                 border-radius: 4px;
                 margin: 0.5em 0;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+
+            br {
+                margin: 0 0 0.8em 0;
             }
         }
 

@@ -117,7 +117,9 @@ export default class ChatUI {
 
     addLink(url) {
         // Проверяем, валидна ли ссылка
-        if (!url || !/^https?:\/\//.test(url)) { return; }
+        if (!url || !/^https?:\/\//.test(url)) {
+            return;
+        }
         console.log(url);
         const el = document.createElement('div');
         el.classList.add(this.classes.message);
@@ -206,10 +208,8 @@ export default class ChatUI {
     }
 
     disabledForm() {
-        this.elements.textarea.disabled = true
-        this.elements.sendButton.disabled = true
-
-        console.log(this.elements.sendButton);
+        this.elements.textarea.disabled = true;
+        this.elements.sendButton.disabled = true;
     }
 
     activeForm() {

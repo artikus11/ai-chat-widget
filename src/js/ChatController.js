@@ -5,9 +5,11 @@ export default class ChatController {
     constructor(ui, api, options = {}) {
         this.ui = ui;
         this.api = api;
-        this.greeting = options.greeting || 'Добрый день! Нужна ли вам помощь?';
-        this.greetDelay = options.greetDelay || 600;
-        this.followupDelay = options.followupDelay || 15000;
+
+        console.log(this.api);
+        this.greeting = options.greeting || {};
+        this.followup = options.followup || {};
+        this.fallback = options.fallback || {};
         this.hasGreeted = false;
         this.hasFollowedUp = false;
         this.greetingTimer = null;
@@ -74,9 +76,9 @@ export default class ChatController {
                         this.links = [];
                     }
                 },
-                error => {
+                () => {
                     this.ui.hideTyping();
-                    this.ui.addMessage(`Ошибка: ${error.message}`, false);
+                    this.ui.addMessage(this.fallback.text, false);
                 }
             );
 
@@ -95,7 +97,7 @@ export default class ChatController {
         this.greetingTimer = setTimeout(() => {
             this.ui.showTyping();
 
-            const text = this.greeting;
+            const text = this.greeting.text;
             let i = 0;
 
             const interval = setInterval(() => {
@@ -110,14 +112,14 @@ export default class ChatController {
                     this.hasGreeted = true;
                 }
             }, 40);
-        }, 600);
+        }, this.greeting.delay);
 
         this.followupTimer = setTimeout(() => {
             if (!this.hasFollowedUp && this.ui.elements.messages.children.length < 3) {
-                this.ui.addMessage('Вы всё ещё думаете? Готова помочь!', false);
+                this.ui.addMessage(this.followup.text, false);
                 this.hasFollowedUp = true;
             }
-        }, 15000);
+        }, this.followup.delay);
     }
 
     toggle() {

@@ -23,21 +23,23 @@
     <div class="container">
         <h3>💬 AI Чат-бот — Песочница</h3>
         <p>Тестовая среда для разработки. Изменения в JS — мгновенно.</p>
-        <div id="chat-container" class="chatbox">
+        <div id="chat-container" class="chatbox" data-aichat-box>
 
             <!-- Кнопка открытия -->
-            <button class="chatbox__toggle">💬</button>
+            <button class="chatbox__toggle" data-aichat-toggle>💬</button>
 
             <!-- Основное окно -->
-            <div class="chatbox__wrapper">
+            <div class="chatbox__wrapper" data-aichat-wrapper>
                 <div class="chatbox__header">
                     <span></span>
-                    <button class="chatbox__close"></button>
+                    <button class="chatbox__close" data-aichat-close></button>
                 </div>
-                <div class="chatbox__messages-inner"></div>
-                <form class="chatbox__input-form">
-                    <textarea class="chatbox__textarea" placeholder="Напишите сообщение..." rows="1"></textarea>
-                    <button type="submit" class="chatbox__send-button" tabindex="0" aria-label="Send">
+                <div class="chatbox__messages-inner" data-aichat-messages-inner></div>
+                <form class="chatbox__input-form" data-aichat-input-form>
+                    <textarea class="chatbox__textarea" data-aichat-textarea placeholder="Напишите сообщение..."
+                        rows="1"></textarea>
+                    <button type="submit" class="chatbox__send-button" data-aichat-send-button tabindex="0"
+                        aria-label="Send">
                         <span class="chatbox__send-icon"></span>
                     </button>
             </div>
@@ -54,6 +56,40 @@
                     url: 'https://chat.varman.pro/api/chat',
                     domain: 'varman.pro',
                     greeting: 'Привет! Чем могу помочь?'
+                },
+                messagesOptions: {
+                    greeting: {
+                        text: 'Привет! Чем могу помочь?',
+                        delay: 600
+                    },
+                    followup: {
+                        text: 'Вы всё ещё думаете? Готова помочь!',
+                        delay: 15000
+                    },
+                    fallback: {
+                        text: 'Что-то пошло не так, позвоните нам',
+                        delay: 0
+                    },
+                    error: {
+                        text: 'Что-то пошло не так, позвоните нам',
+                        delay: 0
+                    },
+                    invite: {
+                        text: '',
+                        delay: 0
+                    },
+                    reminder: {
+                        text: '',
+                        delay: 0
+                    },
+                    encouragement: {
+                        text: '',
+                        delay: 0
+                    },
+                    motivation: {
+                        text: '',
+                        delay: 0
+                    }
                 },
                 themeOptions: {
                     color: '#fff',

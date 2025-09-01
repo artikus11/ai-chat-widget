@@ -26,13 +26,15 @@
  * @param {string} apiOptions.greeting - Приветственное сообщение
  */
 export default class ChatAPI {
-    constructor(apiOptions = {}) {
-        if (!apiOptions.url) {
-            throw new Error('apiOptions.url is required');
+    constructor(options = {}) {
+        console.log(options);
+        if (!options.api.url) {
+            throw new Error('api.url is required');
         }
-        this.apiUrl = apiOptions.url;
-        this.domain = apiOptions.domain;
-        this.greeting = apiOptions.greeting || '';
+
+        this.apiUrl = options.api.url;
+        this.domain = options.api.domain;
+        this.messages = options.messages;
         this.chatId = this.loadChatId();
         this.abortController = null;
     }
@@ -76,11 +78,34 @@ export default class ChatAPI {
         };
 
         let retries = 0;
-        const maxRetries = 3;
+        const maxRetries = 2;
+        let waitingInterval = null;
+        let hasShownWaiting = false;
+        // Функция для запуска индикатора ожидания
+        const startWaitingIndicator = () => {
+            waitingTimeout = setTimeout(() => {
+                onChunk({
+                    type: 'Message',
+                    response: '🕐 Сервер, возможно, запускается… Это может занять до минуты при первом запросе.',
+                });
+                hasShownWaiting = true;
+            }, 3000); // Уже через 3 секунды
+        };
+        // Функция остановки индикатора
+        const stopWaitingIndicator = () => {
+            if (waitingInterval) {
+                clearInterval(waitingInterval);
+                waitingInterval = null;
+            }
+        };
 
         const attempt = async () => {
             while (retries <= maxRetries) {
                 try {
+                    // if (!hasShownWaiting) {
+                    //     startWaitingIndicator();
+                    // }
+
                     const response = await fetch(this.apiUrl, {
                         method: 'POST',
                         headers: {
@@ -91,26 +116,29 @@ export default class ChatAPI {
                         signal: this.abortController.signal,
                     });
 
+                    // stopWaitingIndicator();
+
                     if (!response.ok) {
                         let errorMsg = `Ошибка соединения с сервером: ${response.status}`;
 
-                        try {
-                            const errorData = await response.json();
-                            if (errorData.message) {
-                                errorMsg = errorData.message;
-                            }
-                        } catch {
-                            // Если JSON не пришёл, оставляем дефолтное сообщение
-                        }
+                        console.warn('Ошибка соединения с сервером:', response.status);
+                        // try {
+                        //     const errorData = await response.json();
+                        //     if (errorData.message) {
+                        //         errorMsg = errorData.message;
+                        //     }
+                        // } catch {
+                        //     // Если JSON не пришёл, оставляем дефолтное сообщение
+                        // }
 
-                        onChunk(`❌ ${errorMsg}`);
+                        onChunk(this.messages.error);
 
                         setTimeout(() => {
                             onDone?.();
                         }, 0);
 
                         if (onError) {
-                            onError(new Error(errorMsg));
+                            onError(new Error(this.messages.error));
                         }
 
                         return;
@@ -183,9 +211,29 @@ export default class ChatAPI {
                     onDone?.();
                     return;
                 } catch (error) {
+                    // stopWaitingIndicator();
                     if (error.name === 'AbortError') {
                         return;
                     }
+
+                    // 🔥 ОСНОВНОЕ: если CONNECTION_RESET — сервер не запущен
+                    if (
+                        error.message.includes('CONNECTION_RESET') ||
+                        error.message.includes('CONNECTION_CLOSED') ||
+                        (error.message.includes('Failed to fetch') && !navigator.onLine === false)
+                    ) {
+                        // 🛑 Сервер не отвечает и не запустится сам
+                        onChunk({
+                            type: 'Message',
+                            response:
+                                '❌ Сервер не запущен или недоступен.\n\n' +
+                                'Пожалуйста, свяжитесь с нами — требуется ручной запуск сервера.',
+                        });
+                        onDone?.();
+                        return onError?.(error);
+                    }
+
+                    //;
 
                     retries++;
                     if (retries > maxRetries) {

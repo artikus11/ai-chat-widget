@@ -1,8 +1,8 @@
-import DOMPurify from 'dompurify';
 import '../scss/chat.scss';
-import ChatAPI from './ChatAPI.js';
-import ChatUI from './ChatUI.js';
-import ChatController from './ChatController.js';
+import Api from './api/API';
+import UI from './ui/UI';
+import Controller from './controllers/Controller';
+import { configureSanitizer } from './utils/sanitize';
 
 class AIChat {
     constructor(options = {}) {
@@ -10,12 +10,15 @@ class AIChat {
         const themeOptions = options.themeOptions || {};
         const selectorsOptions = options.selectorsOptions || {};
         const delayOptions = options.delayOptions || {};
+        const messagesOptions = options.messagesOptions || {};
 
         if (!apiOptions.url) {
             throw new Error('apiOptions.url must be provided');
         }
 
-        this.container = document.querySelector((selectorsOptions && selectorsOptions.container) || '.chatbox');
+        this.container = document.querySelector(
+            (selectorsOptions && selectorsOptions.container) || '[data-aichat-box]'
+        );
 
         if (!this.container) {
             console.error('Chat container not found');
@@ -28,22 +31,26 @@ class AIChat {
         this.themeOptions = themeOptions;
         this.selectorsOptions = selectorsOptions;
         this.delayOptions = delayOptions;
+        this.messagesOptions = messagesOptions;
 
         this.init();
     }
 
     init() {
-        this.setupSanitizer();
+        configureSanitizer();
 
-        const ui = new ChatUI(this.container, {
+        const ui = new UI(this.container, {
             ...this.themeOptions,
             ...this.selectorsOptions,
         });
 
-        const api = new ChatAPI(this.apiOptions);
+        const api = new Api({
+            api: { ...this.apiOptions },
+            messages: { ...this.messagesOptions },
+        });
 
-        const controller = new ChatController(ui, api, {
-            greeting: this.greeting,
+        const controller = new Controller(ui, api, {
+            ...this.messagesOptions,
             ...this.delayOptions,
         });
 
@@ -58,64 +65,6 @@ class AIChat {
                 toggle.style.display = 'flex';
             }
         }, this.delayOptions.toggleDelay);
-    }
-
-    setupSanitizer() {
-        DOMPurify.setConfig({
-            ALLOWED_TAGS: [
-                'p',
-                'br',
-                'hr',
-                'h1',
-                'h2',
-                'h3',
-                'h4',
-                'h5',
-                'h6',
-                'strong',
-                'b',
-                'em',
-                'i',
-                'u',
-                'del',
-                'code',
-                'pre',
-                'blockquote',
-                'ul',
-                'ol',
-                'li',
-                'a',
-                'img',
-                'table',
-                'thead',
-                'tbody',
-                'tfoot',
-                'tr',
-                'th',
-                'td',
-                'span',
-            ],
-            ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'title', 'class'],
-            ADD_TAGS: ['span'],
-            ADD_ATTR: ['target', 'rel'],
-        });
-
-        DOMPurify.removeAllHooks();
-        DOMPurify.addHook('afterSanitizeAttributes', node => {
-            if (node.tagName === 'A' && node.target === '_blank') {
-                node.setAttribute('rel', 'noopener noreferrer');
-            }
-
-            if (node.tagName === 'IMG') {
-                const src = node.getAttribute('src');
-                if (
-                    !src ||
-                    (!src.startsWith('https://') && !src.startsWith('data:image/') && !src.startsWith('blob:'))
-                ) {
-                    node.removeAttribute('src');
-                }
-            }
-        });
     }
 }
 

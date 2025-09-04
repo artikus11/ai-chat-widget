@@ -1,5 +1,7 @@
 /**
  * Универсальный логгер с поддержкой разных уровней и обработчиков.
+ *
+ * @class Logger
  */
 export default class Logger {
     constructor() {
@@ -14,7 +16,8 @@ export default class Logger {
         this.addHandler('warn', console.warn.bind(console));
         this.addHandler('error', console.error.bind(console));
         this.addHandler('log', console.log.bind(console));
-        // debug — по умолчанию ничего, можно включить
+
+        this.addHandler('debug', (...args) => console.log('%cDEBUG', 'color: #1E90FF; font-weight: bold', ...args));
     }
 
     /**

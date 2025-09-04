@@ -1,10 +1,11 @@
 import EventEmitter from '../utils/EventEmitter.js';
-import Logger from '../utils/Logger.js';
+import resolveLogger from '../utils/resolveLogger.js';
 
 /**
  * Класс для взаимодействия с API чат-бота с поддержкой стриминга, повторов и управления сессией.
  * Использует EventEmitter для уведомлений.
  *
+ * @class Api
  * @example
  * const api = new Api({
  *   api: { url: 'https://api.example.com/chat', domain: 'example.com' },
@@ -20,11 +21,10 @@ export default class Api extends EventEmitter {
      * @param {Object} options - Конфигурация API.
      * @param {Object} options.api - Настройки API.
      * @param {string} options.api.url - Базовый URL для запросов (обязательно).
-     * @param {string} [options.api.domain] - Домен для заголовка X-API-DOMAIN.
-     * @param {Object} [options.messages] - Локализованные сообщения.
-     * @param {string} [options.messages.error] - Сообщение об ошибке.
+     * @param {string} options.api.domain - Домен для заголовка X-API-DOMAIN.
+     * @param {MessagesProvider} messagesProvider - Провайдер локализованных сообщений
      */
-    constructor(options = {}) {
+    constructor(messagesProvider, options = {}) {
         super();
 
         if (!options.api?.url) {
@@ -33,9 +33,10 @@ export default class Api extends EventEmitter {
 
         this.apiUrl = options.api.url;
         this.domain = options.api.domain;
-        this.messages = options.messages || { error: 'Произошла ошибка' };
 
-        this.logger = this.resolveLogger(options);
+        this.messagesProvider = messagesProvider;
+
+        this.logger = resolveLogger(options.api);
 
         this.chatId = this.loadChatId();
         this.abortController = null;
@@ -96,7 +97,7 @@ export default class Api extends EventEmitter {
      * @returns {Promise<void>} Промис, завершающийся после обработки ответа или ошибки.
      */
     async sendRequest(message) {
-        this.abort(); // Отменяем предыдущий запрос
+        this.abort();
         this.abortController = new AbortController();
 
         const payload = {
@@ -110,33 +111,36 @@ export default class Api extends EventEmitter {
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
             try {
                 const success = await this.attemptRequest(payload);
+
                 if (success) {
                     return;
                 }
             } catch (error) {
                 lastError = error;
 
-                // Если запрос отменён — выходим
                 if (error.name === 'AbortError') {
                     return;
                 }
 
-                // Повторяем только на сетевых ошибках
                 if (this.isNetworkRecoverableError(error)) {
-                    if (attempt < maxRetries) {
-                        await this.delay(1000 * (attempt + 1));
-                        continue;
-                    }
-                } else {
-                    break; // Ошибка несетевая — не повторяем
+                    this.logger.error('Сетевая ошибка:', lastError);
+
+                    this.emit('done');
+                    this.emit('error', new Error(this.messagesProvider.getText('error')));
+
+                    return;
+                }
+
+                if (attempt < maxRetries) {
+                    await this.delay(1000 * (attempt + 1));
                 }
             }
         }
 
-        // Все попытки исчерпаны
-        this.emit('error', { type: 'retry_limit', error: lastError });
-        this.emit('chunk', { type: 'Message', response: this.messages.error });
+        this.logger.error('Все попытки запроса провалены:', lastError);
+
         this.emit('done');
+        this.emit('error', { type: 'retry_limit', error: lastError });
     }
 
     /**
@@ -160,10 +164,11 @@ export default class Api extends EventEmitter {
 
             if (!response.ok) {
                 this.logger.warn('Ошибка сервера:', response.status);
-                this.emit('chunk', { type: 'Message', response: this.messages.error });
+
                 this.emit('done');
-                this.emit('error', new Error(this.messages.error));
-                return true; // Не повторяем — это ошибка ответа, а не сети
+                this.emit('error', new Error(this.messagesProvider.getText('error')));
+
+                return true;
             }
 
             if (!response.body) {
@@ -176,7 +181,8 @@ export default class Api extends EventEmitter {
             if (error.name === 'AbortError') {
                 throw error;
             }
-            throw error; // Сетевая ошибка — будет обработана выше
+
+            throw error;
         }
     }
 
@@ -235,8 +241,8 @@ export default class Api extends EventEmitter {
                 this.handleEvent(event);
             } catch (e) {
                 this.logger.warn('Не удалось распарсить JSON:', cleaned);
-                console.warn('Ошибка:', e.message);
-                console.warn('Stack:', e.stack);
+                this.logger.warn('Ошибка:', e.message);
+                this.logger.warn('Stack:', e.stack);
             }
         }
 
@@ -296,33 +302,5 @@ export default class Api extends EventEmitter {
             this.abortController.abort();
             this.abortController = null;
         }
-    }
-
-    /**
-     * Решает, какой логгер использовать.
-     * @private
-     */
-    resolveLogger(options) {
-        // 1. Если передан кастомный логгер — используем его
-        if (options.logger) {
-            return options.logger;
-        }
-
-        // 2. Если debug: true — создаём логгер с консолью
-        if (options.debug) {
-            const logger = new Logger();
-            // Можно добавить больше контекста
-            logger.debug('Api debug mode enabled');
-            return logger;
-        }
-
-        // 3. Если debug: false или не указан — создаём "тихий" логгер
-        const silentLogger = new Logger();
-        silentLogger.handlers.log = [];
-        silentLogger.handlers.warn = [];
-        silentLogger.handlers.error = [];
-        silentLogger.handlers.debug = [];
-
-        return silentLogger;
     }
 }

@@ -1,35 +1,67 @@
 import ResponseHandler from '../handlers/ResponseHandler.js';
 
+/**
+ * Основной контроллер приложения
+ * Управляет взаимодействием между UI, API и бизнес-логикой
+ * @class Controller
+ */
 export default class Controller {
-    constructor(ui, api, options = {}) {
+    /**
+     * Создаёт контроллер
+     * @param {Object} ui - Экземпляр пользовательского интерфейса
+     * @param {Object} api - Экземпляр API для работы с сервером
+     * @param {MessagesProvider} messagesProvider - Провайдер локализованных сообщений
+     * @param {Object} options - Дополнительные опции
+     */
+    constructor(ui, api, messagesProvider) {
         this.ui = ui;
         this.api = api;
+        this.messagesProvider = messagesProvider;
 
-        this.greeting = options.greeting || {};
-        this.followup = options.followup || {};
-        this.fallback = options.fallback || {};
-
-        this.responseHandler = new ResponseHandler(this.ui, this.api, this.fallback.text);
+        this.responseHandler = new ResponseHandler(this.ui, this.api);
 
         this.api.on('chunk', this.handleChunk.bind(this));
         this.api.on('done', this.handleDone.bind(this));
         this.api.on('error', this.handleError.bind(this));
     }
 
+    /**
+     * Обрабатывает пришедший чанк данных от API
+     * @param {Object} event - Событие с данными чанка
+     */
     handleChunk(event) {
         this.responseHandler.onChunk(event);
     }
 
+    /**
+     * Обрабатывает завершение запроса к API
+     */
     handleDone() {
         this.responseHandler.onDone();
-        this.ui.activeForm();
+        this.responseHandler.reset();
+        this.ui.enableForm();
     }
 
-    handleError(error) {
-        this.responseHandler.onError(error);
-        this.ui.activeForm();
+    /**
+     * Обрабатывает ошибку запроса к API
+     * @param {Object} error - Объект ошибки
+     */
+    handleError() {
+        // Показываем fallback-сообщение только если не было получено данных
+        if (!this.responseHandler.hasReceivedData()) {
+            const fallbackMessage = this.messagesProvider.getText('fallback');
+            this.ui.addMessage(fallbackMessage, false);
+        }
+
+        this.responseHandler.reset();
+        this.ui.enableForm();
     }
 
+    /**
+     * Отправляет сообщение через API
+     * @param {string} text - Текст сообщения для отправки
+     * @param {boolean} isUserInitiated - Флаг пользовательской инициации
+     */
     async sendMessage(text, isUserInitiated = true) {
         if (!text.trim()) {
             return;
@@ -42,53 +74,5 @@ export default class Controller {
         }
 
         await this.api.sendRequest(text);
-    }
-
-    autoGreet() {
-        if (this.hasGreeted) {
-            return;
-        }
-
-        this.greetingTimer = setTimeout(() => {
-            this.ui.showTyping();
-
-            const text = this.greeting.text;
-            let i = 0;
-
-            const interval = setInterval(() => {
-                if (i < text.length) {
-                    this.ui.updateTyping(text.slice(0, i + 1));
-                    this.ui.scrollToBottom();
-                    i++;
-                } else {
-                    clearInterval(interval);
-
-                    this.ui.finalizeTypingAsMessage();
-                    this.hasGreeted = true;
-                }
-            }, 40);
-        }, this.greeting.delay);
-
-        this.followupTimer = setTimeout(() => {
-            if (!this.hasFollowedUp && this.ui.elements.messages.children.length < 3) {
-                this.ui.addMessage(this.followup.text, false);
-                this.hasFollowedUp = true;
-            }
-        }, this.followup.delay);
-    }
-
-    toggle() {
-        if (this.ui.isOpen()) {
-            this.ui.close();
-            if (this.greetingTimer) {
-                clearTimeout(this.greetingTimer);
-            }
-            if (this.followupTimer) {
-                clearTimeout(this.followupTimer);
-            }
-        } else {
-            this.ui.open();
-            this.autoGreet();
-        }
     }
 }

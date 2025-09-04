@@ -1,5 +1,7 @@
 /**
  * EventEmitter для реализации паттерна Pub/Sub.
+ *
+ * @class EventEmitter
  */
 export default class EventEmitter {
     constructor() {

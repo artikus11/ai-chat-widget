@@ -50,7 +50,7 @@ export default class Controller {
         // Показываем fallback-сообщение только если не было получено данных
         if (!this.responseHandler.hasReceivedData()) {
             const fallbackMessage = this.messagesProvider.getText('fallback');
-            this.ui.addMessage(fallbackMessage, false);
+            this.ui.addMessage(fallbackMessage, false, true);
         }
 
         this.responseHandler.reset();

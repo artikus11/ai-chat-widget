@@ -1,3 +1,4 @@
+import { sanitizeHtml } from "../utils/sanitize";
 /**
  * Провайдер сообщений с дефолтными значениями
  * @class MessagesProvider
@@ -112,7 +113,9 @@ export default class MessagesProvider {
      * // 'Что-то пошло не так, позвоните нам'
      */
     getText(type) {
-        return this.get(type).text || '';
+        const text = this.get(type).text || '';
+
+        return sanitizeHtml(text);
     }
 
     /**

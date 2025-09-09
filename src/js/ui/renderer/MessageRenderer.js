@@ -67,7 +67,9 @@ export class MessageRenderer {
      */
     registerContentType(type, renderer) {
         if (typeof renderer !== 'function') {
-            this.logger.warn(`MessageRenderer.registerContentType: renderer must be a function for '${type}'`);
+            this.logger.warn(
+                `MessageRenderer.registerContentType: renderer must be a function for '${type}'`
+            );
             return this;
         }
         this.renderers.set(type, renderer);
@@ -106,7 +108,10 @@ export class MessageRenderer {
         const { type, isUser = false } = payload;
 
         if (!type) {
-            this.logger.warn('MessageRenderer.render: missing "type" in payload', payload);
+            this.logger.warn(
+                'MessageRenderer.render: missing "type" in payload',
+                payload
+            );
             return false;
         }
 
@@ -120,11 +125,18 @@ export class MessageRenderer {
         try {
             success = renderer(payload, contentEl);
         } catch (err) {
-            this.logger.error(`MessageRenderer: failed to render type '${type}'`, err, payload);
+            this.logger.error(
+                `MessageRenderer: failed to render type '${type}'`,
+                err,
+                payload
+            );
         }
 
         if (!success) {
-            this.logger.warn(`MessageRenderer.render: failed to render type '${type}'`, payload);
+            this.logger.warn(
+                `MessageRenderer.render: failed to render type '${type}'`,
+                payload
+            );
             return false;
         }
 
@@ -269,7 +281,10 @@ export class MessageRenderer {
         const { withText = true } = options;
 
         const messageEl = document.createElement('div');
-        messageEl.classList.add(this.classes.message, isUser ? this.classes.user : this.classes.operator);
+        messageEl.classList.add(
+            this.classes.message,
+            isUser ? this.classes.user : this.classes.operator
+        );
 
         const contentEl = document.createElement('div');
         contentEl.className = this.classes.content;
@@ -294,19 +309,29 @@ export class MessageRenderer {
      */
     #validateUrl(url) {
         if (!url || typeof url !== 'string') {
-            this.logger.warn('MessageHandler.addLink: invalid URL (not a string or missing)', { url });
+            this.logger.warn(
+                'MessageHandler.addLink: invalid URL (not a string or missing)',
+                { url }
+            );
             return null;
         }
 
         if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            this.logger.warn('MessageHandler.addLink: URL must start with http:// or https://', url);
+            this.logger.warn(
+                'MessageHandler.addLink: URL must start with http:// or https://',
+                url
+            );
             return null;
         }
 
         try {
             return new URL(url);
         } catch (err) {
-            this.logger.warn('MessageHandler.addLink: failed to parse URL', url, err);
+            this.logger.warn(
+                'MessageHandler.addLink: failed to parse URL',
+                url,
+                err
+            );
             return null;
         }
     }
@@ -330,7 +355,9 @@ export class MessageRenderer {
      */
     #isContainerAvailable() {
         if (!this.messagesContainer) {
-            this.logger.warn('MessageRenderer: messagesContainer is not available');
+            this.logger.warn(
+                'MessageRenderer: messagesContainer is not available'
+            );
             return false;
         }
         return true;

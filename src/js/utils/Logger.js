@@ -17,7 +17,9 @@ export default class Logger {
         this.addHandler('error', console.error.bind(console));
         this.addHandler('log', console.log.bind(console));
 
-        this.addHandler('debug', (...args) => console.log('%cDEBUG', 'color: #1E90FF; font-weight: bold', ...args));
+        this.addHandler('debug', (...args) =>
+            console.log('%cDEBUG', 'color: #1E90FF; font-weight: bold', ...args)
+        );
     }
 
     /**
@@ -38,7 +40,9 @@ export default class Logger {
      */
     removeHandler(level, handler) {
         if (this.handlers[level]) {
-            this.handlers[level] = this.handlers[level].filter(h => h !== handler);
+            this.handlers[level] = this.handlers[level].filter(
+                h => h !== handler
+            );
         }
     }
 

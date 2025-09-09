@@ -34,7 +34,10 @@ export function replaceBrWithSpan(html) {
     const paragraphs = doc.querySelectorAll('p');
 
     paragraphs.forEach(p => {
-        p.innerHTML = p.innerHTML.replace(/<br\s*\/?>/g, '<span class="line-break"></span>');
+        p.innerHTML = p.innerHTML.replace(
+            /<br\s*\/?>/g,
+            '<span class="line-break"></span>'
+        );
     });
 
     return doc.body.innerHTML;

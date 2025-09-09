@@ -1,4 +1,4 @@
-import { sanitizeHtml } from "../utils/sanitize";
+import { sanitizeHtml } from '../utils/sanitize';
 /**
  * Провайдер сообщений с дефолтными значениями
  * @class MessagesProvider
@@ -87,7 +87,10 @@ export default class MessagesProvider {
             error: { ...defaults.error, ...options.error },
             invite: { ...defaults.invite, ...options.invite },
             reminder: { ...defaults.reminder, ...options.reminder },
-            encouragement: { ...defaults.encouragement, ...options.encouragement },
+            encouragement: {
+                ...defaults.encouragement,
+                ...options.encouragement,
+            },
             motivation: { ...defaults.motivation, ...options.motivation },
         };
     }

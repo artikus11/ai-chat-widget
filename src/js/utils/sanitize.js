@@ -62,7 +62,12 @@ export function configureSanitizer() {
 
         if (node.tagName === 'IMG') {
             const src = node.getAttribute('src');
-            if (!src || (!src.startsWith('https://') && !src.startsWith('data:image/') && !src.startsWith('blob:'))) {
+            if (
+                !src ||
+                (!src.startsWith('https://') &&
+                    !src.startsWith('data:image/') &&
+                    !src.startsWith('blob:'))
+            ) {
                 node.removeAttribute('src');
             }
         }

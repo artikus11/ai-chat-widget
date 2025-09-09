@@ -28,11 +28,26 @@ export default class UI {
 
         this.abortController = new AbortController();
 
-        this.messageHandler = new MessageHandler(this.elements.messages, this.classes, options);
+        this.messageHandler = new MessageHandler(
+            this.elements.messages,
+            this.classes,
+            options
+        );
         this.formHandler = new FormHandler(this.elements, this.abortController);
-        this.stateHandler = new StateHandler(this.elements, this.classes, this.abortController);
-        this.typingIndicatorHandler = new TypingIndicatorHandler(this.elements.messages, this.classes);
-        this.autoGreetingHandler = new AutoGreetingHandler(this, messagesProvider, this.elements.messages);
+        this.stateHandler = new StateHandler(
+            this.elements,
+            this.classes,
+            this.abortController
+        );
+        this.typingIndicatorHandler = new TypingIndicatorHandler(
+            this.elements.messages,
+            this.classes
+        );
+        this.autoGreetingHandler = new AutoGreetingHandler(
+            this,
+            messagesProvider,
+            this.elements.messages
+        );
     }
 
     /**

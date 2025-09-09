@@ -126,7 +126,10 @@ export default class Api extends EventEmitter {
                     this.logger.error('Сетевая ошибка:', lastError);
 
                     this.emit('done');
-                    this.emit('error', new Error(this.messagesProvider.getText('error')));
+                    this.emit(
+                        'error',
+                        new Error(this.messagesProvider.getText('error'))
+                    );
 
                     return;
                 }
@@ -166,7 +169,10 @@ export default class Api extends EventEmitter {
                 this.logger.warn('Ошибка сервера:', response.status);
 
                 this.emit('done');
-                this.emit('error', new Error(this.messagesProvider.getText('error')));
+                this.emit(
+                    'error',
+                    new Error(this.messagesProvider.getText('error'))
+                );
 
                 return true;
             }

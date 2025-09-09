@@ -67,11 +67,14 @@ export default class AIChat {
         this.selectorsOptions = selectorsOptions;
         this.messagesOptions = messagesOptions;
 
-        const containerSelector = selectorsOptions.container || '[data-aichat-box]';
+        const containerSelector =
+            selectorsOptions.container || '[data-aichat-box]';
         this.container = document.querySelector(containerSelector);
 
         if (!this.container) {
-            throw new Error(`AIChat: Container not found with selector "${containerSelector}"`);
+            throw new Error(
+                `AIChat: Container not found with selector "${containerSelector}"`
+            );
         }
 
         this.init();
@@ -91,7 +94,9 @@ export default class AIChat {
             this.bindUIEvents();
             this.setupDisplayDelays();
         } catch (error) {
-            const initError = new Error(`AIChat initialization failed: ${error.message}`);
+            const initError = new Error(
+                `AIChat initialization failed: ${error.message}`
+            );
             initError.cause = error;
             throw initError;
         }
@@ -120,8 +125,14 @@ export default class AIChat {
             ...this.themeOptions,
             ...this.selectorsOptions,
         });
-        this.api = new Api(this.messagesProvider, { api: { ...this.apiOptions } });
-        this.controller = new Controller(this.ui, this.api, this.messagesProvider);
+        this.api = new Api(this.messagesProvider, {
+            api: { ...this.apiOptions },
+        });
+        this.controller = new Controller(
+            this.ui,
+            this.api,
+            this.messagesProvider
+        );
     }
 
     /**
@@ -153,7 +164,8 @@ export default class AIChat {
      * @private
      */
     showToggleButton() {
-        const toggleSelector = this.selectorsOptions.toggle || defaultSelectors.toggle;
+        const toggleSelector =
+            this.selectorsOptions.toggle || defaultSelectors.toggle;
 
         setTimeout(() => {
             const toggle = this.container.querySelector(toggleSelector);

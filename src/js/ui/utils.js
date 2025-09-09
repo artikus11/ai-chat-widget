@@ -43,7 +43,10 @@ export class Utils {
         textarea.style.height = 'auto';
 
         const contentHeight = textarea.scrollHeight - totalVertical;
-        const targetHeight = Math.max(MIN_HEIGHT, Math.min(contentHeight, MAX_HEIGHT));
+        const targetHeight = Math.max(
+            MIN_HEIGHT,
+            Math.min(contentHeight, MAX_HEIGHT)
+        );
 
         textarea.style.height = `${targetHeight + totalVertical}px`;
     }

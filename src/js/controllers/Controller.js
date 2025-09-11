@@ -1,5 +1,5 @@
 import ResponseHandler from '../handlers/ResponseHandler.js';
-
+import { EVENTS } from '../events/eventsConfig.js';
 /**
  * Основной контроллер приложения
  * Управляет взаимодействием между UI, API и бизнес-логикой
@@ -21,9 +21,9 @@ export default class Controller {
 
         this.responseHandler = new ResponseHandler(this.ui, this.api);
 
-        this.api.on('chunk', this.handleChunk.bind(this));
-        this.api.on('done', this.handleDone.bind(this));
-        this.api.on('error', this.handleError.bind(this));
+        this.api.on(EVENTS.API.CHUNK_RECEIVED, this.handleChunk.bind(this));
+        this.api.on(EVENTS.API.REQUEST_DONE, this.handleDone.bind(this));
+        this.api.on(EVENTS.API.ERROR, this.handleError.bind(this));
     }
 
     /**

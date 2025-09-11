@@ -1,19 +1,32 @@
-import EventEmitter from '../utils/EventEmitter.js';
+import { Evented } from '../events/Evented.js';
+import { EVENTS } from '../events/eventsConfig.js';
+
+/**
+ * @typedef {Object} MessagesProvider
+ * @property {function(string): string} getText - Возвращает локализованное сообщение по ключу.
+ */
 
 /**
  * Класс для взаимодействия с API чат-бота с поддержкой стриминга, повторов и управления сессией.
- * Использует EventEmitter для уведомлений.
+ * Использует {@link Evented} для уведомления о событиях (например, получении чанка или ошибке).
  *
  * @class Api
+ * @extends EventEmitter
+ *
  * @example
- * const api = new Api({
- *   api: { url: 'https://api.example.com/chat', domain: 'example.com' },
- *   messages: { error: 'Ошибка соединения' }
+ * const api = new Api(messagesProvider, {
+ *   api: {
+ *     url: 'https://api.example.com/chat',
+ *     domain: 'example.com'
+ *   }
  * });
  *
- * api.sendRequest('Привет!', onChunk, onDone, onError);
+ * api.on(EVENTS.API.CHUNK_RECEIVED, (event) => console.log('Chunk:', event));
+ * api.on(EVENTS.API.ERROR, (error) => console.error('Error:', error));
+ *
+ * await api.sendRequest('Привет!');
  */
-export default class Api extends EventEmitter {
+export default class Api extends Evented {
     /**
      * Создаёт экземпляр Api.
      *
@@ -43,8 +56,9 @@ export default class Api extends EventEmitter {
 
     /**
      * Загружает chatId из localStorage.
+     * При ошибке доступа к localStorage выводит предупреждение.
      *
-     * @returns {string|null} Идентификатор чата или null, если недоступно.
+     * @returns {string|null} Идентификатор чата или `null`, если недоступен или отсутствует.
      */
     loadChatId() {
         try {
@@ -54,9 +68,9 @@ export default class Api extends EventEmitter {
             return null;
         }
     }
-
     /**
-     * Сохраняет chatId в localStorage и обновляет текущее значение.
+     * Сохраняет chatId в localStorage и обновляет свойство экземпляра.
+     * При ошибке сохранения выводит предупреждение.
      *
      * @param {string} id - Идентификатор чата.
      */
@@ -70,10 +84,11 @@ export default class Api extends EventEmitter {
     }
 
     /**
-     * Очищает строку от нежелательных символов перед парсингом JSON.
+     * Очищает строку от потенциально проблемных символов перед парсингом JSON.
+     * Удаляет BOM, управляющие символы, "умные" кавычки и заменяет специальные пробелы.
      *
-     * @param {string} str - Входная строка.
-     * @returns {string} Очищенная строка.
+     * @param {string} str - Исходная строка.
+     * @returns {string} Очищенная строка, пригодная для парсинга.
      */
     cleanString(str) {
         return (
@@ -89,11 +104,18 @@ export default class Api extends EventEmitter {
     }
 
     /**
-     * Отправляет сообщение на сервер с поддержкой стриминга, повторов и отмены.
+     * Отправляет сообщение на сервер с поддержкой:
+     * - стриминга ответа (chunked)
+     * - автоматических повторов при сетевых ошибках
+     * - отмены через AbortController
      *
-     * @param {string} message - Текст сообщения пользователя.
+     * Эмитит события:
+     * - {@link EVENTS.API.CHUNK_RECEIVED} — при получении каждого чанка
+     * - {@link EVENTS.API.REQUEST_DONE} — при завершении запроса
+     * - {@link EVENTS.API.ERROR} — при фатальной ошибке или превышении попыток
      *
-     * @returns {Promise<void>} Промис, завершающийся после обработки ответа или ошибки.
+     * @param {string} message - Сообщение пользователя для отправки.
+     * @returns {Promise<void>} Промис, который завершается после успешного получения данных или всех попыток.
      */
     async sendRequest(message) {
         this.abort();
@@ -124,9 +146,9 @@ export default class Api extends EventEmitter {
                 if (this.isNetworkRecoverableError(error)) {
                     this.logger.error('Сетевая ошибка:', lastError);
 
-                    this.emit('done');
+                    this.emit(EVENTS.API.REQUEST_DONE);
                     this.emit(
-                        'error',
+                        EVENTS.API.ERROR,
                         new Error(this.messagesProvider.getText('error'))
                     );
 
@@ -141,16 +163,20 @@ export default class Api extends EventEmitter {
 
         this.logger.error('Все попытки запроса провалены:', lastError);
 
-        this.emit('done');
-        this.emit('error', { type: 'retry_limit', error: lastError });
+        this.emit(EVENTS.API.REQUEST_DONE);
+        this.emit(EVENTS.API.ERROR, { type: 'retry_limit', error: lastError });
     }
 
     /**
-     * Пытается выполнить один запрос и обработать поток.
+     * Пытается выполнить один запрос к API и обработать потоковый ответ.
+     * При успехе запускает чтение стрима.
      *
      * @private
-     * @param {Object} payload - Данные для отправки.
-     * @returns {Promise<boolean>} true, если запрос завершён (успешно или с ошибкой, не требующей повтора).
+     * @param {Object} payload - Данные, отправляемые на сервер.
+     * @param {string} payload.message - Текст сообщения.
+     * @param {string|null} [payload.idChat] - ID чата (если есть).
+     * @returns {Promise<boolean>} `true`, если запрос завершён (успешно или с ошибкой, не требующей повтора).
+     * @throws {Error} Если произошла ошибка, требующая повтора (например, сетевая).
      */
     async attemptRequest(payload) {
         try {
@@ -167,9 +193,9 @@ export default class Api extends EventEmitter {
             if (!response.ok) {
                 this.logger.warn('Ошибка сервера:', response.status);
 
-                this.emit('done');
+                this.emit(EVENTS.API.REQUEST_DONE);
                 this.emit(
-                    'error',
+                    EVENTS.API.ERROR,
                     new Error(this.messagesProvider.getText('error'))
                 );
 
@@ -177,7 +203,7 @@ export default class Api extends EventEmitter {
             }
 
             if (!response.body) {
-                this.emit('done');
+                this.emit(EVENTS.API.REQUEST_DONE);
                 return true;
             }
 
@@ -192,11 +218,13 @@ export default class Api extends EventEmitter {
     }
 
     /**
-     * Читает поток данных из response.body и передаёт чанки в обработку.
+     * Читает потоковые данные из ReadableStream, декодирует их и передаёт в обработку.
+     * Накапливает буфер, разбивает на строки и вызывает {@link processBuffer}.
      *
      * @private
-     * @param {ReadableStream} body - Тело ответа.
-     * @returns {Promise<boolean>} true, если поток завершён.
+     * @param {ReadableStream} body - Тело HTTP-ответа.
+     * @returns {Promise<boolean>} `true`, если поток успешно завершён.
+     * @throws {Error} При ошибках чтения или обработки.
      */
     async readStream(body) {
         const reader = body.getReader();
@@ -211,7 +239,7 @@ export default class Api extends EventEmitter {
 
                 if (done) {
                     this.processBuffer(buffer);
-                    this.emit('done');
+                    this.emit(EVENTS.API.REQUEST_DONE);
                     return true;
                 }
 
@@ -225,10 +253,11 @@ export default class Api extends EventEmitter {
     }
 
     /**
-     * Обрабатывает накопленный буфер, разбивая его на строки и парся JSON.
+     * Обрабатывает накопленный буфер, разбивая его на строки и пытаясь распарсить каждую как JSON.
+     * Неполные строки сохраняются для следующего вызова.
      *
      * @private
-     * @param {string} buffer - Накопленные данные.
+     * @param {string} buffer - Сырые данные из потока.
      * @returns {{ remaining: string }} Остаток буфера (незавершённая строка).
      */
     processBuffer(buffer) {
@@ -255,17 +284,25 @@ export default class Api extends EventEmitter {
     }
 
     /**
-     * Обрабатывает одно событие из потока.
-     * Поддерживает типы: Message, Link, ChatId.
+     * Обрабатывает одно событие из потока данных.
+     * Поддерживает события типа:
+     * - `Message` — текстовое сообщение
+     * - `Link` — ссылка
+     * - `ChatId` — установка нового ID чата
+     *
+     * Эмитит {@link EVENTS.API.CHUNK_RECEIVED}, а при `event.done` — {@link EVENTS.API.REQUEST_DONE}.
      *
      * @private
-     * @param {Object} event - Объект события.
+     * @param {Object} event - Событие из стрима.
+     * @param {string} event.type - Тип события (например, "Message", "ChatId").
+     * @param {*} [event.response] - Полезная нагрузка (зависит от типа).
+     * @param {boolean} [event.done] - Флаг завершения диалога.
      */
     handleEvent(event) {
-        this.emit('chunk', event);
+        this.emit(EVENTS.API.CHUNK_RECEIVED, event);
 
         if (event.done) {
-            this.emit('done');
+            this.emit(EVENTS.API.REQUEST_DONE);
         }
 
         if (event.type === 'ChatId') {

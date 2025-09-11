@@ -112,6 +112,7 @@ export class FormHandler {
             },
             { signal }
         );
+
     }
 
     /**
@@ -129,22 +130,15 @@ export class FormHandler {
         const { signal } = this.abortController;
 
         const updateHeightIfOpen = () => {
+
             if (this.ui.isOpen()) {
                 Utils.updateChatHeight(this.elements);
             }
         };
 
         if ('visualViewport' in window) {
-            window.visualViewport.addEventListener(
-                'resize',
-                updateHeightIfOpen,
-                { signal }
-            );
-            window.visualViewport.addEventListener(
-                'scroll',
-                updateHeightIfOpen,
-                { signal }
-            ); // опционально
+            window.visualViewport.addEventListener('resize', updateHeightIfOpen, { signal });
+            window.visualViewport.addEventListener('scroll', updateHeightIfOpen, { signal }); // опционально
         } else {
             window.addEventListener('resize', updateHeightIfOpen, { signal });
         }
@@ -159,7 +153,11 @@ export class FormHandler {
             { signal }
         );
 
-        this.textarea?.addEventListener('blur', () => {}, { signal });
+        this.textarea?.addEventListener(
+            'blur',
+            () => { },
+            { signal }
+        );
     }
 
     /**
@@ -175,6 +173,7 @@ export class FormHandler {
     focusInput(shouldFocus = true) {
         if (!shouldFocus) {
             return;
+
         }
 
         const isMobile = window.innerWidth <= 768;
@@ -262,7 +261,14 @@ export class FormHandler {
     }
 
     /**
-     * Полный сброс формы: сбрасывает поле ввода и кнопку отправки.
+     * Полный сброс формы: очищает и разблокирует поле ввода и кнопку отправки.
+     *
+     * Вызывается, например, после успешной отправки сообщения.
+     *
+     * @returns {void}
+     *
+     * @example
+     * formHandler.reset(); // форма чиста и активна
      */
     reset() {
         this.resetTextarea();

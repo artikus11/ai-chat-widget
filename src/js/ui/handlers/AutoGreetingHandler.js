@@ -1,4 +1,5 @@
 import { Utils } from '../utils';
+import { EVENTS } from '../../events/eventsConfig';
 
 /**
  * Обработчик автоприветствия.
@@ -107,25 +108,23 @@ export class AutoGreetingHandler {
     animateTyping(text, speed = 40) {
         this.ui.showTyping();
 
-        let i = 0;
-        const interval = setInterval(() => {
-            if (!this.isContainerConnected()) {
-                clearInterval(interval);
-                this.ui.enableForm();
-                return;
-            }
+        const animation = Utils.animateTyping(text, {
+            speed,
+            scrollToBottom: true,
+            scrollContainer: this.messagesContainer,
+        });
 
-            if (i < text.length) {
-                this.ui.updateTyping(text.slice(0, i + 1));
-                Utils.scrollToBottom(this.messagesContainer);
-                i++;
-            } else {
-                clearInterval(interval);
-                this.ui.finalizeTypingAsMessage();
-                this.ui.enableForm();
-                this.hasGreeted = true;
-            }
-        }, speed);
+        animation.on(EVENTS.UI.TYPING_UPDATE, currentText => {
+            this.ui.updateTyping(currentText);
+        });
+
+        animation.on(EVENTS.UI.TYPING_FINISH, () => {
+            this.ui.finalizeTypingAsMessage();
+            this.ui.enableForm();
+            this.hasGreeted = true;
+        });
+
+        this.currentAnimation = animation;
     }
 
     /**

@@ -1,3 +1,5 @@
+import { EVENTS } from '../events/eventsConfig';
+import EventEmitter from '../events/EventEmitter';
 /**
  * Утилиты для работы с DOM, прокруткой, размерами элементов и адаптацией под мобильные устройства.
  *
@@ -180,5 +182,147 @@ export class Utils {
 
         const rect = inputForm.getBoundingClientRect();
         return rect.height;
+    }
+
+    /**
+     * Запускает анимацию "печати" текста по буквам и возвращает экземпляр {@link EventEmitter}.
+     *
+     * Поддерживает события:
+     * - `typing:update` — при добавлении каждого символа
+     * - `typing:finish` — когда весь текст напечатан
+     * - `typing:stop` — если анимация была принудительно остановлена
+     *
+     * Также предоставляет метод `.stop()` на эмиттере для ручной остановки.
+     *
+     * @param {string} text - Текст для анимации печати
+     * @param {Object} options - Настройки анимации
+     * @param {number} [options.speed=40] - Базовая задержка между символами в миллисекундах
+     * @param {boolean} [options.scrollToBottom=false] - Автоматически прокручивать контейнер вниз
+     * @param {HTMLElement} [options.scrollContainer] - Элемент, который будет прокручиваться
+     * @returns {EventEmitter} Экземпляр эмиттера с событиями и методом `.stop()`
+     *
+     * @emits EventEmitter#typing:update {string, string, number} - Текущий текст, текущий символ, индекс
+     * @emits EventEmitter#typing:finish {} - Анимация завершена
+     * @emits EventEmitter#typing:stop {} - Анимация остановлена вручную
+     *
+     * @example
+     * const anim = Utils.animateTyping("Привет!", {
+     *   speed: 50,
+     *   scrollToBottom: true,
+     *   scrollContainer: messagesContainer
+     * });
+     *
+     * anim.on(TYPING_EVENTS.UPDATE, (currentText, char, index) => {
+     *   messageElement.textContent = currentText;
+     * });
+     *
+     * anim.on(TYPING_EVENTS.FINISH, () => {
+     *   console.log("Анимация завершена");
+     * });
+     *
+     * // Принудительная остановка
+     * // anim.stop();
+     *
+     * @static
+     */
+    static animateTyping(text, options = {}) {
+        const {
+            speed = 40,
+            scrollToBottom = false,
+            scrollContainer = null,
+        } = options;
+
+        const emitter = new EventEmitter();
+        let i = 0;
+        let isStopped = false;
+
+        // Защита: если текст пустой — сразу финишируем
+        if (!text || text.length === 0) {
+            setTimeout(() => {
+                if (!isStopped) {
+                    emitter.emit(EVENTS.UI.TYPING_FINISH);
+                }
+            }, 0);
+            return emitter;
+        }
+
+        const interval = setInterval(() => {
+            if (isStopped) {
+                clearInterval(interval);
+                return;
+            }
+
+            if (i < text.length) {
+                const currentText = text.slice(0, i + 1);
+                const char = text[i];
+
+                emitter.emit(EVENTS.UI.TYPING_UPDATE, currentText, char, i);
+                i++;
+            } else {
+                clearInterval(interval);
+                isStopped = true;
+                emitter.emit(EVENTS.UI.TYPING_FINISH);
+            }
+        }, this.getRandomSpeed(speed));
+
+        /**
+         * Принудительно останавливает анимацию.
+         * Гарантированно вызывает STOP и FINISH (если ещё не вызваны).
+         */
+        emitter.stop = () => {
+            if (isStopped) {
+                return;
+            }
+            isStopped = true;
+
+            clearInterval(interval);
+
+            // Опционально: выдать финальный текст
+            emitter.emit(EVENTS.UI.TYPING_UPDATE, text);
+
+            emitter.emit(EVENTS.UI.TYPING_STOP);
+            emitter.emit(EVENTS.UI.TYPING_FINISH);
+        };
+
+        // Автопрокрутка при каждом обновлении (если включено)
+        if (scrollToBottom && scrollContainer) {
+            const handleScroll = () => {
+                Utils.scrollToBottom(scrollContainer);
+            };
+
+            emitter.on(EVENTS.UI.TYPING_UPDATE, handleScroll);
+
+            // Отписываемся после завершения, чтобы не мешать
+            emitter.once(EVENTS.UI.TYPING_FINISH, () => {
+                emitter.off(EVENTS.UI.TYPING_UPDATE, handleScroll);
+            });
+            emitter.once(EVENTS.UI.TYPING_STOP, () => {
+                emitter.off(EVENTS.UI.TYPING_UPDATE, handleScroll);
+            });
+        }
+
+        return emitter;
+    }
+
+    /**
+     * Возвращает случайную задержку вокруг базовой скорости, имитируя естественное, "человеческое" поведение при печати.
+     * Добавляет вариацию (джиттер) в диапазоне ±`variation` мс относительно `speed`.
+     *
+     * @param {number} speed - Базовая задержка между символами в миллисекундах
+     * @param {number} [variation=10] - Максимальное отклонение от базовой скорости (в мс). По умолчанию 10.
+     *                                 Диапазон будет от `-variation` до `+variation`.
+     * @returns {number} Итоговая задержка в миллисекундах: `speed + случайное значение из диапазона [-variation; +variation]`
+     *
+     * @example
+     * Utils.getRandomSpeed(40);        // вернёт значение от 30 до 50
+     * Utils.getRandomSpeed(50, 5);     // вернёт значение от 45 до 55
+     * Utils.getRandomSpeed(30, 15);    // вернёт значение от 15 до 45
+     *
+     * @private
+     * @static
+     */
+    static getRandomSpeed(speed, variation = 10) {
+        const jitter = Math.random() * (2 * variation) - variation;
+        return speed + jitter;
     }
 }

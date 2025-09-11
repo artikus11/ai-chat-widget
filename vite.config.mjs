@@ -18,8 +18,11 @@ export default defineConfig(({ command }) => {
         }),
 
         server: {
+            host: '0.0.0.0',        // слушать все интерфейсы
             port: 3000,
-            open: true
+            strictPort: true,
+            // Дополнительно: разрешить CORS, если нужно
+            cors: true,
         },
 
         build: {

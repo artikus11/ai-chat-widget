@@ -21,9 +21,11 @@ export default class UI {
      * @param {Object} [options.classes] - Пользовательские CSS-классы.
      * @param {Object} [options.selectors] - Селекторы для поиска элементов внутри контейнера.
      */
-    constructor(container, messagesProvider, options = {}) {
+    constructor(container, messagesProvider, options = {}, logger) {
         this.classes = { ...defaultClasses, ...(options.classes || {}) };
         this.elements = new Elements(container, options.selectors);
+        this.logger = logger;
+
         this.messagesProvider = messagesProvider;
 
         this.abortController = new AbortController();
@@ -31,22 +33,31 @@ export default class UI {
         this.messageHandler = new MessageHandler(
             this.elements.messages,
             this.classes,
-            options
+            this.logger
         );
-        this.formHandler = new FormHandler(this.elements, this.abortController);
         this.stateHandler = new StateHandler(
             this.elements,
             this.classes,
-            this.abortController
+            this.abortController,
+            this.logger
         );
+        this.formHandler = new FormHandler(
+            this.elements,
+            this,
+            this.abortController,
+            this.logger
+        );
+
         this.typingIndicatorHandler = new TypingIndicatorHandler(
             this.elements.messages,
-            this.classes
+            this.classes,
+            this.logger
         );
         this.autoGreetingHandler = new AutoGreetingHandler(
             this,
             messagesProvider,
-            this.elements.messages
+            this.elements.messages,
+            this.logger
         );
     }
 

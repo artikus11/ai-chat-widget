@@ -32,10 +32,12 @@ export class TypingIndicatorHandler {
      * @param {string} classes.text - CSS класс текста
      * @param {string} classes.typingDots - CSS класс анимированных точек
      */
-    constructor(messagesContainer, classes) {
+    constructor(messagesContainer, classes, logger) {
         this.messagesContainer = messagesContainer;
         this.classes = classes;
         this.element = null;
+
+        this.logger = logger;
     }
 
     /**

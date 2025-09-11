@@ -1,4 +1,3 @@
-import resolveLogger from '../../utils/resolveLogger';
 import { Utils } from '../utils';
 
 /**
@@ -24,11 +23,11 @@ export class MessageRenderer {
      * @param {string} classes.text - Класс для текста сообщения.
      * @param {string} [classes.image] - Опциональный класс для изображений.
      */
-    constructor(container, classes, options) {
+    constructor(container, classes, logger) {
         this.messagesContainer = container;
         this.classes = classes;
 
-        this.logger = resolveLogger(options);
+        this.logger = logger;
 
         /**
          * Хранилище рендереров по типу контента.

@@ -1,5 +1,4 @@
 import EventEmitter from '../utils/EventEmitter.js';
-import resolveLogger from '../utils/resolveLogger.js';
 
 /**
  * Класс для взаимодействия с API чат-бота с поддержкой стриминга, повторов и управления сессией.
@@ -24,7 +23,7 @@ export default class Api extends EventEmitter {
      * @param {string} options.api.domain - Домен для заголовка X-API-DOMAIN.
      * @param {MessagesProvider} messagesProvider - Провайдер локализованных сообщений
      */
-    constructor(messagesProvider, options = {}) {
+    constructor(messagesProvider, options = {}, logger) {
         super();
 
         if (!options.api?.url) {
@@ -36,7 +35,7 @@ export default class Api extends EventEmitter {
 
         this.messagesProvider = messagesProvider;
 
-        this.logger = resolveLogger(options.api);
+        this.logger = logger;
 
         this.chatId = this.loadChatId();
         this.abortController = null;

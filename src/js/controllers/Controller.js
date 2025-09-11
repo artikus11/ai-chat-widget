@@ -13,10 +13,11 @@ export default class Controller {
      * @param {MessagesProvider} messagesProvider - Провайдер локализованных сообщений
      * @param {Object} options - Дополнительные опции
      */
-    constructor(ui, api, messagesProvider) {
+    constructor(ui, api, messagesProvider, logger) {
         this.ui = ui;
         this.api = api;
         this.messagesProvider = messagesProvider;
+        this.logger = logger;
 
         this.responseHandler = new ResponseHandler(this.ui, this.api);
 

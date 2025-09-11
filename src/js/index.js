@@ -5,6 +5,8 @@ import Controller from './controllers/Controller';
 import MessagesProvider from './providers/MessagesProvider';
 import { configureSanitizer } from './utils/sanitize';
 import { defaultSelectors } from './ui/config';
+import resolveLogger from './utils/resolveLogger';
+import { Utils } from './ui/utils';
 
 /**
  * Основной класс для инициализации и управления AI-чатом.
@@ -67,6 +69,10 @@ export default class AIChat {
         this.selectorsOptions = selectorsOptions;
         this.messagesOptions = messagesOptions;
 
+        this.logger = resolveLogger(this.apiOptions);
+
+        Utils.setLogger(this.logger);
+
         const containerSelector =
             selectorsOptions.container || '[data-aichat-box]';
         this.container = document.querySelector(containerSelector);
@@ -120,18 +126,28 @@ export default class AIChat {
      */
     initializeServices() {
         this.messagesProvider = new MessagesProvider(this.messagesOptions);
-        this.ui = new UI(this.container, this.messagesProvider, {
-            ...this.apiOptions,
-            ...this.themeOptions,
-            ...this.selectorsOptions,
-        });
-        this.api = new Api(this.messagesProvider, {
-            api: { ...this.apiOptions },
-        });
+        this.ui = new UI(
+            this.container,
+            this.messagesProvider,
+            {
+                ...this.apiOptions,
+                ...this.themeOptions,
+                ...this.selectorsOptions,
+            },
+            this.logger
+        );
+        this.api = new Api(
+            this.messagesProvider,
+            {
+                api: { ...this.apiOptions },
+            },
+            this.logger
+        );
         this.controller = new Controller(
             this.ui,
             this.api,
-            this.messagesProvider
+            this.messagesProvider,
+            this.logger
         );
     }
 

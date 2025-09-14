@@ -10,8 +10,13 @@
             ],
             "@scss/*": [
                 "src/scss/*"
+            ],
+            "config": [
+                "config/index.js"
             ]
-        }
+        },
+        "allowSyntheticDefaultImports": true,
+        "moduleResolution": "node"
     },
     "exclude": [
         "node_modules",

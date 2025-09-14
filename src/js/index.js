@@ -4,12 +4,21 @@ import UI from './ui/UI';
 import Controller from './controllers/Controller';
 import MessagesProvider from './providers/MessagesProvider';
 import { configureSanitizer } from './utils/sanitize';
-import { defaultSelectors } from './ui/config';
+import { defaultSelectors } from './config/';
 import resolveLogger from './utils/resolveLogger';
+import { Evented } from './events/Evented';
+import { ExternalEventsBridge } from './events/ExternalEventsBridge';
 import { Utils } from './ui/utils';
 
 /**
  * Основной класс для инициализации и управления AI-чатом.
+ *
+ * Предоставляет API для интеграции чата в веб-приложение: отображение, отправка сообщений,
+ * настройка темы, задержек и обработка событий. Внутренне использует модульную архитектуру
+ * с разделением ответственности между UI, API, контроллером и провайдером сообщений.
+ *
+ * Все события внутри чата проходят через внутреннюю шину событий (`Evented`),
+ * а также могут транслироваться во внешние DOM-события через `ExternalEventsBridge`.
  *
  * @example
  * const chat = new AIChat({
@@ -18,31 +27,44 @@ import { Utils } from './ui/utils';
  *   delayOptions: { toggleShowDelay: 500, chatShowDelay: 2000 }
  * });
  *
- * @class
+ * // Управление состоянием
+ * chat.open();
+ * chat.sendMessage("Привет!");
+ *
+ * // Слушаем внешние события
+ * chat.container.addEventListener('chat.message.sent', (e) => {
+ *   console.log('Отправлено:', e.detail);
+ * });
+ *
+ * @class AIChat
  */
 export default class AIChat {
     /**
-     * Создаёт экземпляр AIChat.
+     * Создаёт экземпляр AIChat с переданными опциями.
      *
-     * @param {Object} options - Конфигурационные опции.
-     * @param {Object} options.apiOptions - Настройки API.
-     * @param {string} options.apiOptions.url - URL API (обязательный).
-     * @param {string} [options.apiOptions.token] - Токен аутентификации.
-     * @param {Object} [options.themeOptions] - Тема оформления (цвета, шрифты и т.д.).
-     * @param {Object} [options.selectorsOptions] - Кастомные CSS-селекторы.
-     * @param {string} [options.selectorsOptions.container] - Селектор контейнера чата.
+     * @param {Object} options - Конфигурационные параметры чата.
+     * @param {Object} options.apiOptions - Настройки подключения к API.
+     * @param {string} options.apiOptions.url - URL-адрес API (обязательный).
+     * @param {string} [options.apiOptions.domain] - Домен с которого передаются данные (опционально).
+     * @param {Object} [options.themeOptions] - Параметры оформления чата.
+     * @param {string} [options.themeOptions.primaryColor] - Основной цвет интерфейса.
+     * @param {Object} [options.selectorsOptions] - Кастомные CSS-селекторы для элементов.
+     * @param {string} [options.selectorsOptions.container="[data-aichat-box]"] - Селектор контейнера чата.
      * @param {string} [options.selectorsOptions.toggle] - Селектор кнопки-переключателя.
-     * @param {Object} [options.delayOptions] - Задержки отображения.
-     * @param {number} [options.delayOptions.toggleShowDelay=100] - Задержка показа кнопки.
-     * @param {number} [options.delayOptions.chatShowDelay=0] - Задержка открытия чата.
-     * @param {Object} [options.messagesOptions] - Опции провайдера сообщений.
+     * @param {Object} [options.delayOptions] - Задержки показа элементов.
+     * @param {number} [options.delayOptions.toggleShowDelay=100] - Задержка (мс) перед появлением кнопки.
+     * @param {number} [options.delayOptions.chatShowDelay=0] - Авто-открытие чата через указанное время.
+     * @param {Object} [options.messagesOptions] - Дополнительные опции для провайдера сообщений.
+     * @param {Function} [options.logger] - Кастомный логгер (с методами debug, info, error и т.д.).
      *
-     * @throws {Error} Если не указан `apiOptions.url` или не найден контейнер.
+     * @throws {Error} Если не указан обязательный параметр `apiOptions.url`.
+     * @throws {Error} Если не найден DOM-элемент по селектору контейнера.
      *
      * @example
-     * new AIChat({
-     *   apiOptions: { url: '/api/v1/chat' },
-     *   delayOptions: { toggleShowDelay: 300 }
+     * const chat = new AIChat({
+     *   apiOptions: { url: '/api/v1/chat', domain: 'abc123' },
+     *   delayOptions: { toggleShowDelay: 300, chatShowDelay: 1500 },
+     *   themeOptions: { primaryColor: '#ff6b6b' }
      * });
      */
     constructor(options = {}) {
@@ -58,23 +80,69 @@ export default class AIChat {
             throw new Error('AIChat: apiOptions.url is required');
         }
 
+        /**
+         * Опции задержек для отображения UI-элементов.
+         * @type {Object}
+         * @property {number} toggleShowDelay - Задержка показа кнопки.
+         * @property {number} chatShowDelay - Задержка авто-открытия чата.
+         */
         this.delayOptions = {
-            toggleShowDelay: 0,
+            toggleShowDelay: 100,
             chatShowDelay: 0,
             ...delayOptions,
         };
 
+        /**
+         * Опции API (URL, токен и т.д.).
+         * @type {Object}
+         */
         this.apiOptions = apiOptions;
+
+        /**
+         * Тема оформления (цвета, стили).
+         * @type {Object}
+         */
         this.themeOptions = themeOptions;
+
+        /**
+         * Кастомные CSS-селекторы.
+         * @type {Object}
+         */
         this.selectorsOptions = selectorsOptions;
+
+        /**
+         * Опции провайдера сообщений.
+         * @type {Object}
+         */
         this.messagesOptions = messagesOptions;
 
+        /**
+         * Внутренняя шина событий для коммуникации между компонентами.
+         * @type {Evented}
+         */
+        this.eventEmitter = new Evented();
+
+        /**
+         * Мост для трансляции внутренних событий в DOM-события.
+         * @type {ExternalEventsBridge|null}
+         */
+        this.externalEventsBridge = null;
+
+        /**
+         * Логгер, используемый всеми компонентами.
+         * @type {Object|Function}
+         */
         this.logger = resolveLogger(this.apiOptions);
 
         Utils.setLogger(this.logger);
 
         const containerSelector =
             selectorsOptions.container || '[data-aichat-box]';
+
+        /**
+         * Корневой DOM-элемент чата.
+         * @type {HTMLElement}
+         */
         this.container = document.querySelector(containerSelector);
 
         if (!this.container) {
@@ -83,49 +151,62 @@ export default class AIChat {
             );
         }
 
+        /**
+         * Флаг, указывающий, что экземпляр уже уничтожен.
+         * @type {boolean}
+         * @private
+         */
+        this.destroyed = false;
+
         this.init();
     }
 
     /**
-     * Инициализирует компоненты чата.
-     * Вызывает цепочку внутренних методов.
+     * Инициализирует все компоненты чата.
+     * Вызывает приватные методы в нужном порядке.
      *
      * @private
-     * @throws {Error} При ошибке инициализации с контекстом.
+     * @throws {Error} При возникновении ошибки при инициализации, с детализацией причины.
      */
     init() {
         try {
-            this.configureSanitizer();
-            this.initializeServices();
-            this.bindUIEvents();
-            this.setupDisplayDelays();
+            this.#configureSanitizer();
+            this.#initializeServices();
+            this.#bindUIEvents();
+            this.#setupDisplayDelays();
         } catch (error) {
             const initError = new Error(
                 `AIChat initialization failed: ${error.message}`
             );
             initError.cause = error;
+            this.logger?.error?.('[AIChat] Initialization error', { error });
             throw initError;
         }
     }
 
     /**
-     * Настраивает санитизацию HTML-контента.
-     * Может быть расширена для кастомных правил.
+     * Настраивает санитизацию HTML-контента для защиты от XSS.
+     * Может быть расширена или переопределена при необходимости.
      *
      * @private
      */
-    configureSanitizer() {
+    #configureSanitizer() {
         configureSanitizer();
     }
 
     /**
-     * Создаёт и сохраняет экземпляры сервисов:
-     * MessagesProvider, UI, Api, Controller.
+     * Создаёт и сохраняет экземпляры ключевых сервисов:
+     * - MessagesProvider — управление сообщениями
+     * - UI — отображение интерфейса
+     * - Api — взаимодействие с сервером
+     * - Controller — логика управления потоком
+     * - ExternalEventsBridge — мост для трансляции внутренних событий в DOM-события
      *
      * @private
      */
-    initializeServices() {
+    #initializeServices() {
         this.messagesProvider = new MessagesProvider(this.messagesOptions);
+
         this.ui = new UI(
             this.container,
             this.messagesProvider,
@@ -134,19 +215,30 @@ export default class AIChat {
                 ...this.themeOptions,
                 ...this.selectorsOptions,
             },
+            this.eventEmitter,
             this.logger
         );
+
         this.api = new Api(
             this.messagesProvider,
             {
                 api: { ...this.apiOptions },
             },
+            this.eventEmitter,
             this.logger
         );
+
         this.controller = new Controller(
             this.ui,
             this.api,
             this.messagesProvider,
+            this.eventEmitter,
+            this.logger
+        );
+
+        this.externalEventsBridge = new ExternalEventsBridge(
+            this.eventEmitter,
+            this.container,
             this.logger
         );
     }
@@ -157,7 +249,7 @@ export default class AIChat {
      *
      * @private
      */
-    bindUIEvents() {
+    #bindUIEvents() {
         this.ui.bindEvents(
             text => this.controller.sendMessage(text),
             () => this.ui.toggle()
@@ -165,13 +257,14 @@ export default class AIChat {
     }
 
     /**
-     * Настраивает задержки отображения кнопки и чата.
+     * Настраивает отложенные действия: показ кнопки, приветствие, автозапуск чата.
      *
      * @private
      */
-    setupDisplayDelays() {
-        this.showToggleButton();
-        this.showChat();
+    #setupDisplayDelays() {
+        this.#showToggleButton();
+        this.#showWelcomTip();
+        this.#showChat();
     }
 
     /**
@@ -179,7 +272,7 @@ export default class AIChat {
      *
      * @private
      */
-    showToggleButton() {
+    #showToggleButton() {
         const toggleSelector =
             this.selectorsOptions.toggle || defaultSelectors.toggle;
 
@@ -192,11 +285,24 @@ export default class AIChat {
     }
 
     /**
-     * Автоматический запуск чата, елси задержка велючена
+     * Запуск приветствия
      *
      * @private
      */
-    showChat() {
+    #showWelcomTip() {
+        if (this.ui.isOpen()) {
+            return;
+        }
+
+        this.ui.startWelcomeTip();
+    }
+
+    /**
+     * Автоматический запуск чата, если задержка велючена
+     *
+     * @private
+     */
+    #showChat() {
         if (this.ui.isOpen()) {
             return;
         }

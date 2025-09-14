@@ -1,3 +1,5 @@
+import { EVENTS } from '../../config';
+
 /**
  * Управляет состоянием (открыто/закрыто) для UI-элемента, например, модального окна или меню.
  * Добавляет/удаляет CSS-классы, обрабатывает события открытия/закрытия.
@@ -45,11 +47,14 @@ export class StateHandler {
      *   console
      * );
      */
-    constructor(elements, classes, abortController, logger) {
+    constructor(elements, classes, abortController, eventEmitter, logger) {
         const { wrapper, toggle, closeButton } = elements;
         const { wrapperOpen, toggleHidden } = classes;
 
         this.logger = logger;
+
+        this.eventEmitter = eventEmitter;
+
         this.wrapper = wrapper;
         this.toggle = toggle;
         this.closeButton = closeButton;
@@ -94,6 +99,8 @@ export class StateHandler {
         this.wrapper?.classList.add(this.wrapperOpenClass);
         this.setAllDataAttributesToValue(this.wrapper, 'open');
         this.toggle?.classList.add(this.toggleHiddenClass);
+
+        this.eventEmitter.emit(EVENTS.UI.CHAT_OPEN);
     }
 
     /**
@@ -110,6 +117,8 @@ export class StateHandler {
         this.wrapper?.classList.remove(this.wrapperOpenClass);
         this.setAllDataAttributesToValue(this.wrapper, 'hide');
         this.toggle?.classList.remove(this.toggleHiddenClass);
+
+        this.eventEmitter.emit(EVENTS.UI.CHAT_CLOSE);
     }
 
     /**

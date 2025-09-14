@@ -1,6 +1,4 @@
-import { Evented } from '../events/Evented.js';
-import { EVENTS } from '../events/eventsConfig.js';
-
+import { EVENTS, STORAGE_KEYS } from '../config';
 /**
  * @typedef {Object} MessagesProvider
  * @property {function(string): string} getText - Возвращает локализованное сообщение по ключу.
@@ -26,7 +24,7 @@ import { EVENTS } from '../events/eventsConfig.js';
  *
  * await api.sendRequest('Привет!');
  */
-export default class Api extends Evented {
+export default class Api {
     /**
      * Создаёт экземпляр Api.
      *
@@ -36,9 +34,7 @@ export default class Api extends Evented {
      * @param {string} options.api.domain - Домен для заголовка X-API-DOMAIN.
      * @param {MessagesProvider} messagesProvider - Провайдер локализованных сообщений
      */
-    constructor(messagesProvider, options = {}, logger) {
-        super();
-
+    constructor(messagesProvider, options = {}, eventEmitter, logger) {
         if (!options.api?.url) {
             throw new Error('api.url is required');
         }
@@ -47,7 +43,7 @@ export default class Api extends Evented {
         this.domain = options.api.domain;
 
         this.messagesProvider = messagesProvider;
-
+        this.eventEmitter = eventEmitter;
         this.logger = logger;
 
         this.chatId = this.loadChatId();
@@ -62,7 +58,7 @@ export default class Api extends Evented {
      */
     loadChatId() {
         try {
-            return localStorage.getItem('chatId');
+            return localStorage.getItem(STORAGE_KEYS.API.ID);
         } catch {
             this.logger.warn('localStorage недоступен');
             return null;
@@ -76,7 +72,7 @@ export default class Api extends Evented {
      */
     saveChatId(id) {
         try {
-            localStorage.setItem('chatId', id);
+            localStorage.setItem(STORAGE_KEYS.API.ID, id);
             this.chatId = id;
         } catch {
             this.logger.warn('Не удалось сохранить chatId');
@@ -146,8 +142,8 @@ export default class Api extends Evented {
                 if (this.isNetworkRecoverableError(error)) {
                     this.logger.error('Сетевая ошибка:', lastError);
 
-                    this.emit(EVENTS.API.REQUEST_DONE);
-                    this.emit(
+                    this.eventEmitter.emit(EVENTS.API.REQUEST_DONE);
+                    this.eventEmitter.emit(
                         EVENTS.API.ERROR,
                         new Error(this.messagesProvider.getText('error'))
                     );
@@ -163,8 +159,11 @@ export default class Api extends Evented {
 
         this.logger.error('Все попытки запроса провалены:', lastError);
 
-        this.emit(EVENTS.API.REQUEST_DONE);
-        this.emit(EVENTS.API.ERROR, { type: 'retry_limit', error: lastError });
+        this.eventEmitter.emit(EVENTS.API.REQUEST_DONE);
+        this.eventEmitter.emit(EVENTS.API.ERROR, {
+            type: 'retry_limit',
+            error: lastError,
+        });
     }
 
     /**
@@ -193,8 +192,8 @@ export default class Api extends Evented {
             if (!response.ok) {
                 this.logger.warn('Ошибка сервера:', response.status);
 
-                this.emit(EVENTS.API.REQUEST_DONE);
-                this.emit(
+                this.eventEmitter.emit(EVENTS.API.REQUEST_DONE);
+                this.eventEmitter.emit(
                     EVENTS.API.ERROR,
                     new Error(this.messagesProvider.getText('error'))
                 );
@@ -203,7 +202,7 @@ export default class Api extends Evented {
             }
 
             if (!response.body) {
-                this.emit(EVENTS.API.REQUEST_DONE);
+                this.eventEmitter.emit(EVENTS.API.REQUEST_DONE);
                 return true;
             }
 
@@ -239,7 +238,7 @@ export default class Api extends Evented {
 
                 if (done) {
                     this.processBuffer(buffer);
-                    this.emit(EVENTS.API.REQUEST_DONE);
+                    this.eventEmitter.emit(EVENTS.API.REQUEST_DONE);
                     return true;
                 }
 
@@ -299,10 +298,10 @@ export default class Api extends Evented {
      * @param {boolean} [event.done] - Флаг завершения диалога.
      */
     handleEvent(event) {
-        this.emit(EVENTS.API.CHUNK_RECEIVED, event);
+        this.eventEmitter.emit(EVENTS.API.CHUNK_RECEIVED, event);
 
         if (event.done) {
-            this.emit(EVENTS.API.REQUEST_DONE);
+            this.eventEmitter.emit(EVENTS.API.REQUEST_DONE);
         }
 
         if (event.type === 'ChatId') {

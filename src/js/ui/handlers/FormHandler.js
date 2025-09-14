@@ -1,4 +1,5 @@
 import { Utils } from '../utils';
+import { EVENTS } from '../../config';
 
 /**
  * Класс для управления поведением формы ввода сообщения.
@@ -36,7 +37,7 @@ export class FormHandler {
      * @example
      * const handler = new FormHandler(elements, uiState, new AbortController());
      */
-    constructor(elements, ui, abortController) {
+    constructor(ui, elements, abortController, eventEmitter, logger) {
         const { inputForm, textarea, sendButton, wrapper } = elements;
 
         this.elements = elements;
@@ -47,6 +48,8 @@ export class FormHandler {
         this.wrapper = wrapper;
 
         this.abortController = abortController;
+        this.eventEmitter = eventEmitter;
+        this.logger = logger;
 
         this.ui = ui;
 
@@ -83,6 +86,9 @@ export class FormHandler {
 
                 if (text) {
                     onSubmit(text);
+
+                    this.eventEmitter.emit(EVENTS.UI.MESSAGE_SENT);
+
                     if (this.textarea) {
                         this.textarea.value = '';
                         Utils.autoResize(this.textarea);
@@ -144,7 +150,7 @@ export class FormHandler {
                 'scroll',
                 updateHeightIfOpen,
                 { signal }
-            ); // опционально
+            );
         } else {
             window.addEventListener('resize', updateHeightIfOpen, { signal });
         }

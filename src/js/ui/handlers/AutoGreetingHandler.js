@@ -1,5 +1,5 @@
 import { Utils } from '../utils';
-import { EVENTS } from '../../events/eventsConfig';
+import { EVENTS } from '../../config/events';
 
 /**
  * Обработчик автоприветствия.
@@ -16,9 +16,12 @@ export class AutoGreetingHandler {
      * @param {Object} messagesProvider - Провайдер текстов и задержек.
      * @param {HTMLElement} messagesContainer - DOM-элемент, куда добавляются сообщения.
      */
-    constructor(ui, messagesProvider, messagesContainer) {
+    constructor(ui, messagesProvider, messagesContainer, eventEmitter, logger) {
         this.ui = ui;
         this.messagesProvider = messagesProvider;
+        this.eventEmitter = eventEmitter;
+        this.logger = logger;
+
         this.messagesContainer = messagesContainer;
 
         this.hasGreeted = false;

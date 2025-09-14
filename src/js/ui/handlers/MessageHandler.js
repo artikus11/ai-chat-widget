@@ -18,9 +18,10 @@ export class MessageHandler {
      * @param {string} options.classes.content - Класс для контейнера содержимого сообщения.
      * @param {string} options.classes.text - Класс для текста сообщения.
      */
-    constructor(messagesContainer, classes, logger) {
+    constructor(messagesContainer, classes, eventEmitter, logger) {
         this.messagesContainer = messagesContainer;
         this.classes = classes;
+        this.eventEmitter = eventEmitter;
 
         this.renderer = new MessageRenderer(messagesContainer, classes, logger);
     }

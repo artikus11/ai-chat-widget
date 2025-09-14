@@ -1,6 +1,6 @@
 import { marked } from 'marked';
-import { normalizeMarkdown, replaceBrWithSpan } from '../utils/markdown.js';
-import { sanitizeHtml } from '../utils/sanitize.js';
+import { normalizeMarkdown, replaceBrWithSpan } from '../utils/markdown';
+import { sanitizeHtml } from '../utils/sanitize';
 
 /**
  * Класс для форматирования текстовых данных и ссылок для отображения в веб-интерфейсе

@@ -1,4 +1,4 @@
-import ResponseFormatter from '../formatters/ResponseFormatter.js';
+import ResponseFormatter from '../formatters/ResponseFormatter';
 
 /**
  * Обработчик потоковых ответов от API

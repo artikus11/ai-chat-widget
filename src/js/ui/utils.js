@@ -1,4 +1,4 @@
-import { EVENTS } from '../events/eventsConfig';
+import { EVENTS } from '../config/events';
 import EventEmitter from '../events/EventEmitter';
 /**
  * Утилиты для работы с DOM, прокруткой, размерами элементов и адаптацией под мобильные устройства.

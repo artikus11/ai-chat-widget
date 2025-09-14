@@ -1,135 +1,138 @@
 import { sanitizeHtml } from '../utils/sanitize';
-/**
- * Провайдер сообщений с дефолтными значениями
- * @class MessagesProvider
- */
+
 export default class MessagesProvider {
+    static DEFAULTS = {
+        greeting: {
+            text: 'Привет! Чем могу помочь?',
+            delay: 600,
+        },
+        followup: {
+            text: 'Вы всё ещё думаете? Готова помочь!',
+            delay: 15000,
+        },
+        fallback: {
+            text: 'Что-то пошло не так, позвоните нам',
+            delay: 0,
+        },
+        error: {
+            text: 'Что-то пошло не так, позвоните нам',
+            delay: 0,
+        },
+        welcome: {
+            text: 'Готов помочь! Нажмите, чтобы начать чат',
+            delay: 3000,
+            duration: 4000,
+            disable: false,
+        },
+        invite: { text: '', delay: 0 },
+        reminder: { text: '', delay: 0 },
+        encouragement: { text: '', delay: 0 },
+        motivation: { text: '', delay: 0 },
+    };
+
     /**
-     * Создает экземпляр MessagesProvider
-     * @param {Object} [messagesOptions={}] - Объект с кастомными настройками сообщений
-     * @param {Object} [messagesOptions.greeting] - Настройки приветственного сообщения
-     * @param {string} [messagesOptions.greeting.text='Привет! Чем могу помочь?'] - Текст приветствия
-     * @param {number} [messagesOptions.greeting.delay=600] - Задержка перед показом приветствия (мс)
-     * @param {Object} [messagesOptions.followup] - Настройки сообщения-напоминания
-     * @param {string} [messagesOptions.followup.text='Вы всё ещё думаете? Готова помочь!'] - Текст напоминания
-     * @param {number} [messagesOptions.followup.delay=15000] - Задержка перед показом напоминания (мс)
-     * @param {Object} [messagesOptions.fallback] - Настройки резервного сообщения
-     * @param {string} [messagesOptions.fallback.text='Что-то пошло не так, позвоните нам'] - Текст резервного сообщения
-     * @param {number} [messagesOptions.fallback.delay=0] - Задержка резервного сообщения (мс)
-     * @param {Object} [messagesOptions.error] - Настройки сообщения об ошибке
-     * @param {string} [messagesOptions.error.text='Что-то пошло не так, позвоните нам'] - Текст ошибки
-     * @param {number} [messagesOptions.error.delay=0] - Задержка сообщения об ошибке (мс)
-     * @param {Object} [messagesOptions.invite] - Настройки пригласительного сообщения
-     * @param {string} [messagesOptions.invite.text=''] - Текст приглашения
-     * @param {number} [messagesOptions.invite.delay=0] - Задержка приглашения (мс)
-     * @param {Object} [messagesOptions.reminder] - Настройки напоминания
-     * @param {string} [messagesOptions.reminder.text=''] - Текст напоминания
-     * @param {number} [messagesOptions.reminder.delay=0] - Задержка напоминания (мс)
-     * @param {Object} [messagesOptions.encouragement] - Настройки поощрительного сообщения
-     * @param {string} [messagesOptions.encouragement.text=''] - Текст поощрения
-     * @param {number} [messagesOptions.encouragement.delay=0] - Задержка поощрения (мс)
-     * @param {Object} [messagesOptions.motivation] - Настройки мотивационного сообщения
-     * @param {string} [messagesOptions.motivation.text=''] - Текст мотивации
-     * @param {number} [messagesOptions.motivation.delay=0] - Задержка мотивации (мс)
+     * @param {Object} [messagesOptions={}] - Кастомные настройки
+     *   Структура: { [type]: { text: string, delay: number, ...any } }
      */
     constructor(messagesOptions = {}) {
         this.messages = this.mergeWithDefaults(messagesOptions);
     }
 
     /**
-     * Объединяет пользовательские настройки с значениями по умолчанию
-     * @private
-     * @param {Object} options - Пользовательские настройки сообщений
-     * @returns {Object} Объединенный объект настроек
+     * Глубокое слияние с дефолтами
+     * Теперь поддерживает любые ключи
      */
     mergeWithDefaults(options) {
-        const defaults = {
-            greeting: {
-                text: 'Привет! Чем могу помочь?',
-                delay: 600,
-            },
-            followup: {
-                text: 'Вы всё ещё думаете? Готова помочь!',
-                delay: 15000,
-            },
-            fallback: {
-                text: 'Что-то пошло не так, позвоните нам',
-                delay: 0,
-            },
-            error: {
-                text: 'Что-то пошло не так, позвоните нам',
-                delay: 0,
-            },
-            invite: {
-                text: '',
-                delay: 0,
-            },
-            reminder: {
-                text: '',
-                delay: 0,
-            },
-            encouragement: {
-                text: '',
-                delay: 0,
-            },
-            motivation: {
-                text: '',
-                delay: 0,
-            },
-        };
+        const defaults = MessagesProvider.DEFAULTS; // или как у вас хранится
+        const result = {};
 
-        return {
-            ...defaults,
-            ...options,
-            greeting: { ...defaults.greeting, ...options.greeting },
-            followup: { ...defaults.followup, ...options.followup },
-            fallback: { ...defaults.fallback, ...options.fallback },
-            error: { ...defaults.error, ...options.error },
-            invite: { ...defaults.invite, ...options.invite },
-            reminder: { ...defaults.reminder, ...options.reminder },
-            encouragement: {
-                ...defaults.encouragement,
-                ...options.encouragement,
-            },
-            motivation: { ...defaults.motivation, ...options.motivation },
-        };
+        const allKeys = new Set([
+            ...Object.keys(defaults),
+            ...Object.keys(options),
+        ]);
+
+        for (const key of allKeys) {
+            const defaultConfig = defaults[key] || { text: '', delay: 0 };
+            const userConfig = options[key];
+
+            // Если пользователь ничего не передал — используем дефолт
+            if (!userConfig) {
+                result[key] = defaultConfig;
+                continue;
+            }
+
+            // Глубокое слияние с защитой от пустых значений
+            result[key] = {};
+            for (const field of Object.keys(defaultConfig)) {
+                const value = userConfig[field];
+                // Если значение НЕ передано или оно пустое (но не 0!) — берём из дефолта
+                if (
+                    value === undefined ||
+                    value === null ||
+                    (value === '' && field === 'text')
+                ) {
+                    result[key][field] = defaultConfig[field];
+                } else {
+                    result[key][field] = value;
+                }
+            }
+
+            // Если в userConfig есть поля, которых нет в дефолтах (например, duration) — добавим их
+            for (const field of Object.keys(userConfig)) {
+                if (!(field in defaultConfig)) {
+                    result[key][field] = userConfig[field];
+                }
+            }
+        }
+
+        return result;
     }
 
     /**
-     * Получает полный объект сообщения по типу
-     * @param {string} type - Тип сообщения (greeting, followup, error и т.д.)
-     * @returns {Object} Объект сообщения с text и delay, или {text: '', delay: 0} если тип не найден
-     * @example
-     * const message = messagesProvider.get('greeting');
-     * // { text: 'Привет! Чем могу помочь?', delay: 600 }
+     * Получить весь объект сообщения
      */
     get(type) {
         return this.messages[type] || { text: '', delay: 0 };
     }
 
     /**
-     * Получает только текст сообщения по типу
-     * @param {string} type - Тип сообщения
-     * @returns {string} Текст сообщения или пустая строка если тип не найден
-     * @example
-     * const text = messagesProvider.getText('error');
-     * // 'Что-то пошло не так, позвоните нам'
+     * Получить только текст (очищенный)
      */
     getText(type) {
-        const text = this.get(type).text || '';
-
-        return sanitizeHtml(text);
+        const message = this.get(type);
+        return sanitizeHtml(message.text || '');
     }
 
     /**
-     * Получает задержку сообщения по типу
-     * @param {string} type - Тип сообщения
-     * @returns {number} Задержка в миллисекундах или 0 если тип не найден
-     * @example
-     * const delay = messagesProvider.getDelay('followup');
-     * // 15000
+     * Получить задержку
      */
     getDelay(type) {
-        return this.get(type).delay || 0;
+        const message = this.get(type);
+        return message.delay ?? 0;
+    }
+
+    /**
+     * Получить произвольное поле (например, duration)
+     * @param {string} type - тип сообщения
+     * @param {string} field - имя поля
+     * @param {*} defaultValue - значение по умолчанию
+     */
+    getField(type, field, defaultValue = undefined) {
+        const message = this.get(type);
+        return message[field] !== undefined ? message[field] : defaultValue;
+    }
+
+    /**
+     * Проверить, существует ли тип сообщения
+     */
+    has(type) {
+        return !!this.messages[type];
+    }
+
+    /**
+     * Получить список всех доступных типов
+     */
+    listTypes() {
+        return Object.keys(this.messages);
     }
 }

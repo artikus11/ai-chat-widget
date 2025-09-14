@@ -1,4 +1,4 @@
-import { defaultSelectors } from './config';
+import { defaultSelectors } from '../config';
 
 /**
  * Класс для поиска и хранения DOM-элементов внутри указанного контейнера.

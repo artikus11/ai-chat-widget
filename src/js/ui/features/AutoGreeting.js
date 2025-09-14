@@ -6,11 +6,11 @@ import { EVENTS } from '../../config/events';
  * Отвечает за показ приветственного сообщения с анимацией печати
  * и отправку follow-up сообщения при определённых условиях.
  *
- * @class AutoGreetingHandler
+ * @class AutoGreeting
  */
 export class AutoGreeting {
     /**
-     * Создаёт экземпляр AutoGreetingHandler.
+     * Создаёт экземпляр AutoGreeting.
      *
      * @param {Object} ui - Экземпляр UI для управления интерфейсом чата.
      * @param {Object} messagesProvider - Провайдер текстов и задержек.

@@ -4,9 +4,9 @@ import { EVENTS } from '../../config';
  * Управляет состоянием (открыто/закрыто) для UI-элемента, например, модального окна или меню.
  * Добавляет/удаляет CSS-классы, обрабатывает события открытия/закрытия.
  *
- * @class StateHandler
+ * @class StateManager
  * @example
- * const stateHandler = new StateHandler(
+ * const stateHandler = new StateManager(
  *   { wrapper, toggle, closeButton },
  *   { wrapperOpen: 'menu-open', toggleHidden: 'hidden' },
  *   abortController,
@@ -23,7 +23,7 @@ import { EVENTS } from '../../config';
  */
 export class StateManager {
     /**
-     * Создаёт экземпляр StateHandler.
+     * Создаёт экземпляр StateManager.
      *
      * @param {Object} elements - Объект с DOM-элементами интерфейса.
      * @param {HTMLElement|null} elements.wrapper - Основной контейнер, которому добавляется класс при открытии.

@@ -6,9 +6,9 @@ import { Utils } from '../utils';
  * Отвечает за отображение, обновление и скрытие анимированного индикатора
  * с мигающими точками, а также за его преобразование в полноценное сообщение.
  *
- * @class TypingIndicatorHandler
+ * @class TypingIndicator
  * @example
- * const handler = new TypingIndicatorHandler(messagesContainer, {
+ * const handler = new TypingIndicator(messagesContainer, {
  *   message: 'message',
  *   operator: 'operator',
  *   content: 'content',
@@ -23,7 +23,7 @@ import { Utils } from '../utils';
  */
 export class TypingIndicator {
     /**
-     * Создает экземпляр TypingIndicatorHandler
+     * Создает экземпляр TypingIndicator
      * @param {HTMLElement} messagesContainer - Контейнер для сообщений
      * @param {Object} classes - Объект с CSS классами
      * @param {string} classes.message - CSS класс сообщения

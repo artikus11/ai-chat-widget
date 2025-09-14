@@ -4,11 +4,11 @@ import { MessageRenderer } from '../renderer/MessageRenderer';
  * Класс для управления отображением сообщений в контейнере чата.
  * Позволяет добавлять текстовые сообщения (пользователя и оператора), ссылки и очищать историю.
  *
- * @class MessageHandler
+ * @class Messages
  */
 export class Messages {
     /**
-     * Создаёт экземпляр MessageHandler.
+     * Создаёт экземпляр Messages.
      * @param {HTMLElement|null} messagesContainer - DOM-элемент, в который добавляются сообщения.
      * @param {Object} options - Настройки компонента.
      * @param {Object} options.classes - Объект с CSS-классами для стилизации.

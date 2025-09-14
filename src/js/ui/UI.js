@@ -131,7 +131,6 @@ export default class UI {
             this.eventEmitter,
             this.logger
         );
-
     }
 
     /**

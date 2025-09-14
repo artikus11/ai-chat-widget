@@ -11,11 +11,11 @@ import { EVENTS, STORAGE_KEYS } from '../../config';
  *
  * Автоматически скрывается при взаимодействии или по таймауту.
  *
- * @class WelcomeTipHandler
+ * @class WelcomeTip
  */
 export class WelcomeTip {
     /**
-     * Создаёт экземпляр WelcomeTipHandler.
+     * Создаёт экземпляр WelcomeTip.
      *
      * @param {Object} elements - DOM-элементы интерфейса
      * @param {HTMLElement} elements.toggle - Кнопка открытия чата

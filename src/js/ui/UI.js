@@ -116,7 +116,7 @@ export default class UI {
             this.logger
         );
 
-        this.stateHandler = new StateManager(
+        this.stateManager = new StateManager(
             this.elements,
             this.classes,
             this.abortController,
@@ -158,7 +158,7 @@ export default class UI {
             this.logger
         );
 
-        this.welcomeTipHandler = new WelcomeTip(
+        this.welcomeTip = new WelcomeTip(
             this.elements,
             this.classes,
             this.messagesProvider,
@@ -183,7 +183,7 @@ export default class UI {
      */
     bindEvents(onSubmit, onToggle) {
         this.formHandler.bindEvents(onSubmit);
-        this.stateHandler.bindEvents(onToggle);
+        this.stateManager.bindEvents(onToggle);
     }
 
     /**
@@ -241,7 +241,7 @@ export default class UI {
      * ui.startWelcomeTip();
      */
     startWelcomeTip() {
-        this.welcomeTipHandler.start();
+        this.welcomeTip.start();
     }
 
     /**
@@ -320,7 +320,7 @@ export default class UI {
      * }
      */
     isOpen() {
-        return this.stateHandler.isOpen();
+        return this.stateManager.isOpen();
     }
 
     /**
@@ -330,7 +330,7 @@ export default class UI {
      * ui.open();
      */
     open() {
-        this.stateHandler.open();
+        this.stateManager.open();
     }
 
     /**
@@ -340,7 +340,7 @@ export default class UI {
      * ui.close();
      */
     close() {
-        this.stateHandler.close();
+        this.stateManager.close();
     }
 
     /**
@@ -370,7 +370,7 @@ export default class UI {
         this.messages?.clearHistoryMessages?.();
 
         // Удалить приветствие-подсказку
-        this.welcomeTipHandler?.destroy?.();
+        this.welcomeTip?.destroy?.();
 
         // Гарантировать, что чат закрыт
         if (this.isOpen()) {

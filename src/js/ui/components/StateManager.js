@@ -21,7 +21,7 @@ import { EVENTS } from '../../config';
  *   }
  * });
  */
-export class StateHandler {
+export class StateManager {
     /**
      * Создаёт экземпляр StateHandler.
      *

@@ -13,7 +13,7 @@ import { EVENTS, STORAGE_KEYS } from '../../config';
  *
  * @class WelcomeTipHandler
  */
-export class WelcomeTipHandler {
+export class WelcomeTip {
     /**
      * Создаёт экземпляр WelcomeTipHandler.
      *

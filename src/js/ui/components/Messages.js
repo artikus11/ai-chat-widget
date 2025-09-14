@@ -6,7 +6,7 @@ import { MessageRenderer } from '../renderer/MessageRenderer';
  *
  * @class MessageHandler
  */
-export class MessageHandler {
+export class Messages {
     /**
      * Создаёт экземпляр MessageHandler.
      * @param {HTMLElement|null} messagesContainer - DOM-элемент, в который добавляются сообщения.

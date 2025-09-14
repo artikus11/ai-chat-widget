@@ -1,11 +1,11 @@
 import { defaultClasses } from '../config';
 import { Elements } from './Elements';
-import { MessageHandler } from './handlers/MessageHandler';
-import { FormHandler } from './handlers/FormHandler';
-import { StateHandler } from './handlers/StateHandler';
-import { TypingIndicatorHandler } from './handlers/TypingIndicatorHandler';
-import { AutoGreetingHandler } from './handlers/AutoGreetingHandler';
-import { WelcomeTipHandler } from './handlers/WelcomeTipHandler';
+import { Messages } from './components/Messages';
+import { FormHandler } from './components/FormHandler';
+import { StateManager } from './components/StateManager';
+import { TypingIndicator } from './features/TypingIndicator';
+import { AutoGreeting } from './features/AutoGreeting';
+import { WelcomeTip } from './features/WelcomeTip';
 
 /**
  * Основной класс пользовательского интерфейса чата.
@@ -97,6 +97,7 @@ export default class UI {
         this.abortController = new AbortController();
 
         this.#initializeComponents();
+        this.#initializeFeatures();
     }
 
     /**
@@ -104,21 +105,18 @@ export default class UI {
      * - сообщения
      * - форма
      * - состояние (открыто/закрыто)
-     * - индикатор печати
-     * - авто-приветствие
-     * - подсказка-приветствие
      *
      * @private
      */
     #initializeComponents() {
-        this.messageHandler = new MessageHandler(
+        this.messages = new Messages(
             this.elements.messages,
             this.classes,
             this.eventEmitter,
             this.logger
         );
 
-        this.stateHandler = new StateHandler(
+        this.stateHandler = new StateManager(
             this.elements,
             this.classes,
             this.abortController,
@@ -134,14 +132,25 @@ export default class UI {
             this.logger
         );
 
-        this.typingIndicatorHandler = new TypingIndicatorHandler(
+    }
+
+    /**
+     * Инициализирует дополнительный функционал UI:
+     * - индикатор печати
+     * - авто-приветствие
+     * - подсказка-приветствие
+     *
+     * @private
+     */
+    #initializeFeatures() {
+        this.typingIndicator = new TypingIndicator(
             this.elements.messages,
             this.classes,
             this.eventEmitter,
             this.logger
         );
 
-        this.autoGreetingHandler = new AutoGreetingHandler(
+        this.autoGreeting = new AutoGreeting(
             this,
             this.messagesProvider,
             this.elements.messages,
@@ -149,7 +158,7 @@ export default class UI {
             this.logger
         );
 
-        this.welcomeTipHandler = new WelcomeTipHandler(
+        this.welcomeTipHandler = new WelcomeTip(
             this.elements,
             this.classes,
             this.messagesProvider,
@@ -201,10 +210,10 @@ export default class UI {
     toggle() {
         if (this.isOpen()) {
             this.close();
-            this.autoGreetingHandler.cancel();
+            this.autoGreeting.cancel();
         } else {
             this.open();
-            this.autoGreetingHandler.start();
+            this.autoGreeting.start();
         }
     }
 
@@ -222,7 +231,7 @@ export default class UI {
      * });
      */
     addMessage(...args) {
-        return this.messageHandler.addMessage(...args);
+        return this.messages.addMessage(...args);
     }
 
     /**
@@ -242,7 +251,7 @@ export default class UI {
      * ui.showTyping();
      */
     showTyping() {
-        this.typingIndicatorHandler.show();
+        this.typingIndicator.show();
     }
 
     /**
@@ -254,7 +263,7 @@ export default class UI {
      * ui.updateTyping({ sender: 'Ассистент' });
      */
     updateTyping(...args) {
-        this.typingIndicatorHandler.update(...args);
+        this.typingIndicator.update(...args);
     }
 
     /**
@@ -264,7 +273,7 @@ export default class UI {
      * ui.hideTyping();
      */
     hideTyping() {
-        this.typingIndicatorHandler.hide();
+        this.typingIndicator.hide();
     }
 
     /**
@@ -277,7 +286,7 @@ export default class UI {
      * });
      */
     finalizeTypingAsMessage() {
-        this.typingIndicatorHandler.finalizeAsMessage();
+        this.typingIndicator.finalizeAsMessage();
     }
 
     /**
@@ -349,16 +358,16 @@ export default class UI {
      */
     cleanup() {
         // Остановить авто-приветствие (таймеры)
-        this.autoGreetingHandler?.reset?.();
+        this.autoGreeting?.reset?.();
 
         // Скрыть индикатор "печатает", если активен
-        this.typingIndicatorHandler?.hide?.();
+        this.typingIndicator?.hide?.();
 
         // Сбросить форму ввода
         this.formHandler?.reset?.();
 
         // Очистить историю сообщений
-        this.messageHandler?.clearHistoryMessages?.();
+        this.messages?.clearHistoryMessages?.();
 
         // Удалить приветствие-подсказку
         this.welcomeTipHandler?.destroy?.();

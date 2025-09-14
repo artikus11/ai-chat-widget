@@ -8,7 +8,7 @@ import { EVENTS } from '../../config/events';
  *
  * @class AutoGreetingHandler
  */
-export class AutoGreetingHandler {
+export class AutoGreeting {
     /**
      * Создаёт экземпляр AutoGreetingHandler.
      *

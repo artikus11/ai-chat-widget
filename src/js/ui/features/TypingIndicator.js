@@ -21,7 +21,7 @@ import { Utils } from '../utils';
  * handler.finalizeAsMessage(); // Зафиксировать как сообщение
  * handler.hide();           // Скрыть полностью
  */
-export class TypingIndicatorHandler {
+export class TypingIndicator {
     /**
      * Создает экземпляр TypingIndicatorHandler
      * @param {HTMLElement} messagesContainer - Контейнер для сообщений

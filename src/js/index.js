@@ -313,7 +313,7 @@ export default class AIChat {
 
         setTimeout(() => {
             this.ui.open();
-            this.ui.autoGreetingHandler.start();
+            this.ui.autoGreeting.start();
         }, this.delayOptions.chatShowDelay);
     }
 

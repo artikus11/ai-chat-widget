@@ -160,6 +160,45 @@ https://unpkg.com/ai-chat-widget@1.0.0/dist/chat.js
 | **delayOptions**   | `chatShowDelay`  | number  | `5000`       | Задержка (в мс) перед автоматическим появлением чат-окна после загрузки страницы. |
 |                    | `toggleShowDelay`| number  | `1000`       | Задержка (в мс) перед появлением кнопки-тумблера (иконки чата в нижнем правом углу). |
 
+## Внешние события (DOM Events)
+
+Компонент транслирует внутренние события в **кастомные DOM-события** через `CustomEvent`, что позволяет внешним системам — таким как интеграции, аналитика или родительские приложения — реагировать на происходящее внутри чата.
+
+Все события генерируются на контейнере чата, имеют префикс `aichat.` (например, `aichat.open`) и всплывают по DOM-дереву (`bubbles: true`). Дополнительные данные передаются в свойстве `detail`.
+
+### Список доступных событий
+
+| Внутреннее событие               | Имя DOM-события             | Описание |
+|----------------------------------|-----------------------------|--------|
+| `ui:chat:open`                   | `aichat.open`               | Чат был открыт пользователем. |
+| `ui:chat:close`                  | `aichat.close`              | Чат был закрыт пользователем. |
+| `ui:message:sent`                | `aichat.message_sent`       | Пользователь отправил сообщение. В `detail` — текст сообщения. |
+| `ui:welcome-tip:show`            | `aichat.welcome_tip_show`   | Показана подсказка-приветствие. |
+| `ui:welcome-tip:hide`            | `aichat.welcome_tip_hide`   | Подсказка-приветствие скрыта. |
+| `api:request:start`              | `aichat.request_start`      | Начался сетевой запрос к API. В `detail` — тип запроса или метаданные. |
+| `api:request:done`               | `aichat.request_done`       | Запрос к API успешно завершён. В `detail` — ответ сервера. |
+| `api:error`                      | `aichat.error`              | Произошла ошибка при обращении к API. В `detail` — объект ошибки. |
+
+
+
+### Как слушать события
+
+Подписывайтесь на события с помощью стандартного метода `addEventListener` на DOM-элементе контейнера чата:
+
+```js
+const chatContainer = document.getElementById('chat-container');
+
+// Пример 1: Отслеживаем открытие и закрытие чата
+chatContainer.addEventListener('aichat.open', (event) => {
+    console.log('Чат открыт');
+    ym(123456, 'reachGoal', 'CHAT_OPEN'); // Яндекс.Метрика
+});
+
+chatContainer.addEventListener('aichat.close', (event) => {
+    console.log('Чат закрыт');
+    gtag('event', 'chat_close'); // Google Analytics
+});
+```
 
 ## Поддержка WordPress
 Легко интегрируется в WordPress через wp_enqueue_script.

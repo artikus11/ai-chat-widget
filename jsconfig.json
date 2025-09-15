@@ -8,6 +8,9 @@
             "@js/*": [
                 "src/js/*"
             ],
+            "@test/*": [
+                "src/test/*"
+            ],
             "@scss/*": [
                 "src/scss/*"
             ],
@@ -16,7 +19,9 @@
             ]
         },
         "allowSyntheticDefaultImports": true,
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "strict": true,
+        "skipLibCheck": true
     },
     "exclude": [
         "node_modules",

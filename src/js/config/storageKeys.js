@@ -11,6 +11,7 @@ export const STORAGE_KEYS = {
 
             WELCOME_SHOWN: withPrefix('ui:welcome-tip:welcome-shown'),
             FOLLOWUP_SHOWN: withPrefix('ui:welcome-tip:followup-shown'),
+            RETURNING_SHOWN: withPrefix('ui:welcome-tip:returning-shown'),
             RECONNECT_SHOWN: withPrefix('ui:welcome-tip:reconnect-shown'),
             ACTIVE_RETURN_SHOWN: withPrefix(
                 'ui:welcome-tip:active-return-shown'

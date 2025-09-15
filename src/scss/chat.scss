@@ -70,7 +70,7 @@ $spacing: 16px;
 
     &__welcome-tip {
         position: absolute;
-        left: -320px;
+        right: calc(100% + 20px);
         top: 50%;
         transform: translateY(-50%);
         background: #fff;
@@ -79,20 +79,17 @@ $spacing: 16px;
         font-size: 14px;
         border-radius: 8px;
         white-space: normal;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         z-index: -1;
-        transition: left 0.4s ease-out, z-index 0s linear 0.4s;
+        transition: opacity 0.3s ease, transform 0.4s ease-out;
         opacity: 0;
-        transition: opacity 0.3s ease, left 0.4s ease-out;
         pointer-events: none;
-        //max-width: 280px;
-        width: 280px;
+        max-width: 280px;
+        width: max-content;
         text-align: left;
         line-height: 1.3;
 
         &--show {
-            // left: 70px;
-            /* Выезжаем вправо от кнопки */
             opacity: 1;
             z-index: 1;
         }

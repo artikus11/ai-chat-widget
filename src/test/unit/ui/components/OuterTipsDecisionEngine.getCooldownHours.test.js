@@ -1,7 +1,7 @@
 import { describe, test, expect, vi } from 'vitest';
-import { WelcomeTipDecisionEngine } from '@js/ui/components/WelcomeTipDecisionEngine';
+import { OuterTipsDecisionEngine } from '@js/ui/components/OuterTipsDecisionEngine';
 
-describe('WelcomeTipDecisionEngine > getCooldownHours()', () => {
+describe('OuterTipsDecisionEngine > getCooldownHours()', () => {
     let engine;
     let messagesProvider;
 
@@ -9,13 +9,13 @@ describe('WelcomeTipDecisionEngine > getCooldownHours()', () => {
         messagesProvider = {
             has: vi.fn(() => true),
             get: vi.fn(),
-            getField: function (type, field, defaultValue) {
+            getField: function (namespace, type, field, defaultValue) {
                 const message = this.get(type);
                 return message?.[field] !== undefined ? message[field] : defaultValue;
             }
         };
 
-        engine = new WelcomeTipDecisionEngine(messagesProvider);
+        engine = new OuterTipsDecisionEngine(messagesProvider);
     });
 
     test('возвращает значение из провайдера, если задано', () => {

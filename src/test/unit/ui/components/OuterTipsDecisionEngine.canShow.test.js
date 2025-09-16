@@ -1,11 +1,11 @@
 // src/test/unit/ui/components/WelcomeTipDecisionEngine.canShow.test.js
 import { describe, test, expect, vi } from 'vitest';
-import { WelcomeTipDecisionEngine } from '@js/ui/components/WelcomeTipDecisionEngine';
+import { OuterTipsDecisionEngine } from '@js/ui/components/OuterTipsDecisionEngine';
 import { STORAGE_KEYS } from '@js/config';
 
 const NOW = 1700000000000;
 
-describe('WelcomeTipDecisionEngine > canShow()', () => {
+describe('OuterTipsDecisionEngine > canShow()', () => {
     let engine;
     let messagesProvider;
 
@@ -14,11 +14,11 @@ describe('WelcomeTipDecisionEngine > canShow()', () => {
 
         messagesProvider = {
             has: () => true,
-            getField: (type, field, def) => def
+            getField: vi.fn((namespace, type, field, defaultValue) => defaultValue),
         };
 
         localStorage.clear();
-        engine = new WelcomeTipDecisionEngine(messagesProvider);
+        engine = new OuterTipsDecisionEngine(messagesProvider);
     });
 
     afterEach(() => {
@@ -43,7 +43,7 @@ describe('WelcomeTipDecisionEngine > canShow()', () => {
 
     test('запрещает показ, если прошло меньше кулдауна', () => {
         const twelveHoursAgo = NOW - 12 * 60 * 60 * 1000;
-        const key = STORAGE_KEYS.UI.WELCOME_TIP.WELCOME_SHOWN;
+        const key = STORAGE_KEYS.UI.OUTER_TIP.WELCOME_SHOWN;
         localStorage.setItem(key, JSON.stringify({ timestamp: twelveHoursAgo }));
         vi.spyOn(engine, 'getCooldownHours').mockReturnValue(24);
 
@@ -54,7 +54,7 @@ describe('WelcomeTipDecisionEngine > canShow()', () => {
 
     test('разрешает показ, если прошло больше кулдауна', () => {
         const thirtyHoursAgo = NOW - 30 * 60 * 60 * 1000;
-        const key = STORAGE_KEYS.UI.WELCOME_TIP.WELCOME_SHOWN;
+        const key = STORAGE_KEYS.UI.OUTER_TIP.WELCOME_SHOWN;
         localStorage.setItem(key, JSON.stringify({ timestamp: thirtyHoursAgo }));
         vi.spyOn(engine, 'getCooldownHours').mockReturnValue(24);
 
@@ -64,7 +64,7 @@ describe('WelcomeTipDecisionEngine > canShow()', () => {
     });
 
     test('игнорирует ошибку парсинга JSON', () => {
-        const key = STORAGE_KEYS.UI.WELCOME_TIP.WELCOME_SHOWN;
+        const key = STORAGE_KEYS.UI.OUTER_TIP.WELCOME_SHOWN;
         localStorage.setItem(key, '{ сломанный JSON');
         vi.spyOn(engine, 'getCooldownHours').mockReturnValue(24);
 

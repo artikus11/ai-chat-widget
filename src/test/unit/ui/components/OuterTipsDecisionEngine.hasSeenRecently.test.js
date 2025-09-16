@@ -1,11 +1,10 @@
-// src/test/unit/ui/components/WelcomeTipDecisionEngine.hasSeenRecently.test.js
 import { describe, test, expect, vi } from 'vitest';
-import { WelcomeTipDecisionEngine } from '@js/ui/components/WelcomeTipDecisionEngine';
+import { OuterTipsDecisionEngine } from '@js/ui/components/OuterTipsDecisionEngine';
 import { STORAGE_KEYS } from '@js/config';
 
 const NOW = 1700000000000;
 
-describe('WelcomeTipDecisionEngine > hasSeenRecently()', () => {
+describe('OuterTipsDecisionEngine > hasSeenRecently()', () => {
     let engine;
     let messagesProvider;
 
@@ -18,7 +17,7 @@ describe('WelcomeTipDecisionEngine > hasSeenRecently()', () => {
         };
 
         localStorage.clear();
-        engine = new WelcomeTipDecisionEngine(messagesProvider);
+        engine = new OuterTipsDecisionEngine(messagesProvider);
     });
 
     afterEach(() => {
@@ -27,7 +26,7 @@ describe('WelcomeTipDecisionEngine > hasSeenRecently()', () => {
 
     test('возвращает true, если видели 6 часов назад (меньше 24)', () => {
         const sixHoursAgo = NOW - 6 * 60 * 60 * 1000;
-        const key = STORAGE_KEYS.UI.WELCOME_TIP.ACTIVE_RETURN_SHOWN;
+        const key = STORAGE_KEYS.UI.OUTER_TIP.ACTIVE_RETURN_SHOWN;
         localStorage.setItem(key, JSON.stringify({ timestamp: sixHoursAgo }));
 
         const result = engine.hasSeenRecently('active_return', 24);
@@ -37,7 +36,7 @@ describe('WelcomeTipDecisionEngine > hasSeenRecently()', () => {
 
     test('возвращает false, если видели 30 часов назад (больше 24)', () => {
         const thirtyHoursAgo = NOW - 30 * 60 * 60 * 1000;
-        const key = STORAGE_KEYS.UI.WELCOME_TIP.ACTIVE_RETURN_SHOWN;
+        const key = STORAGE_KEYS.UI.OUTER_TIP.ACTIVE_RETURN_SHOWN;
         localStorage.setItem(key, JSON.stringify({ timestamp: thirtyHoursAgo }));
 
         const result = engine.hasSeenRecently('active_return', 24);
@@ -51,7 +50,7 @@ describe('WelcomeTipDecisionEngine > hasSeenRecently()', () => {
     });
 
     test('возвращает true при ошибке парсинга JSON', () => {
-        const key = STORAGE_KEYS.UI.WELCOME_TIP.ACTIVE_RETURN_SHOWN;
+        const key = STORAGE_KEYS.UI.OUTER_TIP.ACTIVE_RETURN_SHOWN;
         localStorage.setItem(key, '{ некорректный JSON');
 
         const result = engine.hasSeenRecently('active_return', 24);

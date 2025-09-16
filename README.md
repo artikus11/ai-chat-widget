@@ -173,8 +173,8 @@ https://unpkg.com/ai-chat-widget@1.0.0/dist/chat.js
 | `ui:chat:open`                   | `aichat.open`               | Чат был открыт пользователем. |
 | `ui:chat:close`                  | `aichat.close`              | Чат был закрыт пользователем. |
 | `ui:message:sent`                | `aichat.message_sent`       | Пользователь отправил сообщение. В `detail` — текст сообщения. |
-| `ui:welcome-tip:show`            | `aichat.welcome_tip_show`   | Показана подсказка-приветствие. |
-| `ui:welcome-tip:hide`            | `aichat.welcome_tip_hide`   | Подсказка-приветствие скрыта. |
+| `ui:outer-tip:show`            | `aichat.outer_tip_show`   | Показана подсказка-приветствие. |
+| `ui:outer-tip:hide`            | `aichat.outer_tip_hide`   | Подсказка-приветствие скрыта. |
 | `api:request:start`              | `aichat.request_start`      | Начался сетевой запрос к API. В `detail` — тип запроса или метаданные. |
 | `api:request:done`               | `aichat.request_done`       | Запрос к API успешно завершён. В `detail` — ответ сервера. |
 | `api:error`                      | `aichat.error`              | Произошла ошибка при обращении к API. В `detail` — объект ошибки. |

@@ -4,8 +4,8 @@ import { Messages } from './components/Messages';
 import { FormHandler } from './components/FormHandler';
 import { StateManager } from './components/StateManager';
 import { TypingIndicator } from './features/TypingIndicator';
-import { AutoGreeting } from './features/AutoGreeting';
-import { WelcomeTip } from './features/WelcomeTip';
+import { InnerTips } from './features/InnerTips';
+import { OuterTips } from './features/OuterTips';
 
 /**
  * Основной класс пользовательского интерфейса чата.
@@ -149,7 +149,7 @@ export default class UI {
             this.logger
         );
 
-        this.autoGreeting = new AutoGreeting(
+        this.innerTips = new InnerTips(
             this,
             this.messagesProvider,
             this.elements.messages,
@@ -157,7 +157,7 @@ export default class UI {
             this.logger
         );
 
-        this.welcomeTip = new WelcomeTip(
+        this.outerTips = new OuterTips(
             this.elements,
             this.classes,
             this.messagesProvider,
@@ -209,10 +209,10 @@ export default class UI {
     toggle() {
         if (this.isOpen()) {
             this.close();
-            this.autoGreeting.cancel();
+            this.innerTips.cancel();
         } else {
             this.open();
-            this.autoGreeting.start();
+            this.innerTips.start();
         }
     }
 
@@ -239,8 +239,8 @@ export default class UI {
      * @example
      * ui.startWelcomeTip();
      */
-    startWelcomeTip() {
-        this.welcomeTip.start();
+    startOuterTips() {
+        this.outerTips.start();
     }
 
     /**
@@ -357,7 +357,7 @@ export default class UI {
      */
     cleanup() {
         // Остановить авто-приветствие (таймеры)
-        this.autoGreeting?.reset?.();
+        this.innerTips?.reset?.();
 
         // Скрыть индикатор "печатает", если активен
         this.typingIndicator?.hide?.();
@@ -369,7 +369,7 @@ export default class UI {
         this.messages?.clearHistoryMessages?.();
 
         // Удалить приветствие-подсказку
-        this.welcomeTip?.destroy?.();
+        this.outerTips?.destroy?.();
 
         // Гарантировать, что чат закрыт
         if (this.isOpen()) {

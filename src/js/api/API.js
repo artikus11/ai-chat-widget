@@ -145,7 +145,7 @@ export default class Api {
                     this.eventEmitter.emit(EVENTS.API.REQUEST_DONE);
                     this.eventEmitter.emit(
                         EVENTS.API.ERROR,
-                        new Error(this.messagesProvider.getText('error'))
+                        new Error(this.messagesProvider.getText('in', 'error'))
                     );
 
                     return;
@@ -195,7 +195,7 @@ export default class Api {
                 this.eventEmitter.emit(EVENTS.API.REQUEST_DONE);
                 this.eventEmitter.emit(
                     EVENTS.API.ERROR,
-                    new Error(this.messagesProvider.getText('error'))
+                    new Error(this.messagesProvider.getText('in', 'error'))
                 );
 
                 return true;

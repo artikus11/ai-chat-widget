@@ -56,9 +56,11 @@ export default class Controller {
      * @param {Object} error - Объект ошибки
      */
     handleError() {
-        // Показываем fallback-сообщение только если не было получено данных
         if (!this.responseHandler.hasReceivedData()) {
-            const fallbackMessage = this.messagesProvider.getText('fallback');
+            const fallbackMessage = this.messagesProvider.getText(
+                'in',
+                'error'
+            );
             this.ui.addMessage(fallbackMessage, false, true);
         }
 

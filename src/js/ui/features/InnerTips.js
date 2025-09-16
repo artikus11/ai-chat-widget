@@ -6,9 +6,9 @@ import { EVENTS } from '../../config/events';
  * Отвечает за показ приветственного сообщения с анимацией печати
  * и отправку follow-up сообщения при определённых условиях.
  *
- * @class AutoGreeting
+ * @class InnerTips
  */
-export class AutoGreeting {
+export class InnerTips {
     /**
      * Создаёт экземпляр AutoGreeting.
      *
@@ -62,18 +62,24 @@ export class AutoGreeting {
     startGreeting() {
         this.ui.disabledForm();
 
-        this.greetingTimer = setTimeout(() => {
-            if (!this.isContainerConnected() || this.hasGreeted) {
-                this.ui.enableForm();
-                return;
-            }
+        this.greetingTimer = setTimeout(
+            () => {
+                if (!this.isContainerConnected() || this.hasGreeted) {
+                    this.ui.enableForm();
+                    return;
+                }
 
-            const greetingText = this.messagesProvider.getText('greeting');
+                const greetingText = this.messagesProvider.getText(
+                    'in',
+                    'greeting'
+                );
 
-            if (greetingText) {
-                this.animateTyping(greetingText);
-            }
-        }, this.messagesProvider.getDelay('greeting'));
+                if (greetingText) {
+                    this.animateTyping(greetingText);
+                }
+            },
+            this.messagesProvider.getDelay('in', 'greeting')
+        );
     }
 
     /**
@@ -84,21 +90,27 @@ export class AutoGreeting {
      * @private
      */
     scheduleFollowUp() {
-        this.followupTimer = setTimeout(() => {
-            if (!this.isContainerConnected() || this.hasFollowedUp) {
-                return;
-            }
+        this.followupTimer = setTimeout(
+            () => {
+                if (!this.isContainerConnected() || this.hasFollowedUp) {
+                    return;
+                }
 
-            if (this.getMessageCount() >= 3) {
-                return;
-            }
+                if (this.getMessageCount() >= 3) {
+                    return;
+                }
 
-            const followupText = this.messagesProvider.getText('followup');
+                const followupText = this.messagesProvider.getText(
+                    'in',
+                    'followup'
+                );
 
-            if (followupText) {
-                this.animateTyping(followupText);
-            }
-        }, this.messagesProvider.getDelay('followup'));
+                if (followupText) {
+                    this.animateTyping(followupText);
+                }
+            },
+            this.messagesProvider.getDelay('in', 'followup')
+        );
     }
 
     /**

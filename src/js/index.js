@@ -263,7 +263,7 @@ export default class AIChat {
      */
     #setupDisplayDelays() {
         this.#showToggleButton();
-        this.#showWelcomTip();
+        this.#showOuterTips();
         this.#showChat();
     }
 
@@ -289,12 +289,12 @@ export default class AIChat {
      *
      * @private
      */
-    #showWelcomTip() {
+    #showOuterTips() {
         if (this.ui.isOpen()) {
             return;
         }
 
-        this.ui.startWelcomeTip();
+        this.ui.startOuterTips();
     }
 
     /**
@@ -313,7 +313,7 @@ export default class AIChat {
 
         setTimeout(() => {
             this.ui.open();
-            this.ui.autoGreeting.start();
+            this.ui.innerTips.start();
         }, this.delayOptions.chatShowDelay);
     }
 

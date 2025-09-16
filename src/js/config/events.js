@@ -18,9 +18,9 @@ export const EVENTS = {
         CHAT_OPEN: withPrefix('ui:chat:open'),
         CHAT_CLOSE: withPrefix('ui:chat:close'),
 
-        WELCOME_TIP_SHOW: withPrefix('ui:welcome-tip:show'),
-        WELCOME_TIP_HIDE: withPrefix('ui:welcome-tip:hide'),
-        WELCOME_TIP_DESTROY: withPrefix('ui:welcome-tip:destroy'),
+        OUTER_TIP_SHOW: withPrefix('ui:outer-tip:show'),
+        OUTER_TIP_HIDE: withPrefix('ui:outer-tip:hide'),
+        OUTER_TIP_DESTROY: withPrefix('ui:outer-tip:destroy'),
 
         TYPING_UPDATE: withPrefix('ui:typing:update'),
         TYPING_FINISH: withPrefix('ui:typing:finish'),

@@ -2,6 +2,7 @@ import { Utils } from '../utils';
 import { EVENTS } from '../../config';
 import { OuterTipsDecisionEngine } from '../components/OuterTipsDecisionEngine';
 import { TipStorage } from '../tips/TipStorage';
+import { UserActivityStorage } from '../tips/UserActivityStorage';
 
 /**
  * Умный обработчик внешних подсказок (всплывающих сообщений под кнопкой чата).
@@ -96,9 +97,9 @@ export class OuterTips {
         this.logger = logger;
 
         this.tipStorage = new TipStorage(this.keysProvider);
+        this.userActivityStorage = new UserActivityStorage(this.keysProvider);
         this.decisionEngine = new OuterTipsDecisionEngine(messagesProvider);
-        console.log('this.keysProvider', this.keysProvider.listAll());
-        console.log('this.tipStorage', this.tipStorage);
+
         this.started = false;
         this.isShown = false;
         this.animation = null;
@@ -207,9 +208,8 @@ export class OuterTips {
      * @returns {number|null} Timestamp или `null`, если не открывался
      */
     getLastChatOpenTime() {
-        const raw = localStorage.getItem(
-            this.tipStorage.getKey('CHAT', 'CHAT_OPEN')
-        );
+        const raw = this.userActivityStorage.getLastChatOpenTime();
+
         return raw ? parseInt(raw, 10) : null;
     }
 
@@ -219,11 +219,7 @@ export class OuterTips {
      * @returns {boolean} `true`, если сообщение было отправлено
      */
     hasUserSentMessage() {
-        return (
-            localStorage.getItem(
-                this.tipStorage.getKey('CHAT', 'MESSAGE_SENT')
-            ) === 'true'
-        );
+        return this.userActivityStorage.hasSentMessage();
     }
 
     /**
@@ -365,17 +361,18 @@ export class OuterTips {
      * @returns {void}
      */
     markChatAsOpened() {
-        try {
-            localStorage.setItem(
-                this.tipStorage.getKey('CHAT', 'CHAT_OPEN'),
-                Date.now().toString()
-            );
-        } catch (e) {
-            this.logger.warn(
-                '[WelcomeTip] Не удалось сохранить время открытия:',
-                e
-            );
-        }
+        // try {
+        //     localStorage.setItem(
+        //         this.tipStorage.getKey('CHAT', 'CHAT_OPEN'),
+        //         Date.now().toString()
+        //     );
+        // } catch (e) {
+        //     this.logger.warn(
+        //         '[WelcomeTip] Не удалось сохранить время открытия:',
+        //         e
+        //     );
+        // }
+        this.userActivityStorage.markChatOpen();
     }
 
     /**
@@ -386,10 +383,11 @@ export class OuterTips {
      */
     markUserAsActive() {
         try {
-            localStorage.setItem(
-                this.tipStorage.getKey('CHAT', 'MESSAGE_SENT'),
-                'true'
-            );
+            // localStorage.setItem(
+            //     this.tipStorage.getKey('CHAT', 'MESSAGE_SENT'),
+            //     'true'
+            // );
+            this.userActivityStorage.markMessageSent();
             this.markChatAsOpened();
         } catch (e) {
             this.logger.warn(
@@ -413,13 +411,15 @@ export class OuterTips {
         }
 
         try {
-            localStorage.setItem(
-                key,
-                JSON.stringify({
-                    type,
-                    timestamp: new Date().toISOString(),
-                })
-            );
+            // localStorage.setItem(
+            //     key,
+            //     JSON.stringify({
+            //         type,
+            //         timestamp: new Date().toISOString(),
+            //     })
+            // );
+
+            this.tipStorage.markAsShown(type, 'out');
 
             if (type === 'welcome') {
                 this.incrementWelcomeCount();
@@ -432,19 +432,6 @@ export class OuterTips {
         }
     }
 
-    /**
-     * Увеличивает счётчик показов приветственного сообщения в sessionStorage.
-     *
-     * @returns {void}
-     */
-    incrementWelcomeCount() {
-        const count =
-            parseInt(
-                sessionStorage.getItem('aichat:welcome:count') || '0',
-                10
-            ) + 1;
-        sessionStorage.setItem('aichat:welcome:count', count.toString());
-    }
 
     /**
      * Проверяет, можно ли рендерить подсказку (элементы существуют и в DOM).

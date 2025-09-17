@@ -1,4 +1,3 @@
-// src/test/unit/ui/features/OuterTips.unit.test.js
 import { describe, test, expect, vi } from 'vitest';
 import { OuterTips } from '@js/ui/features/OuterTips';
 import { Utils } from '@js/ui/utils';

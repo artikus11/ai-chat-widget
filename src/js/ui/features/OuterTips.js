@@ -1,6 +1,7 @@
 import { Utils } from '../utils';
-import { EVENTS, STORAGE_KEYS } from '../../config';
+import { EVENTS } from '../../config';
 import { OuterTipsDecisionEngine } from '../components/OuterTipsDecisionEngine';
+import { TipStorage } from '../tips/TipStorage';
 
 /**
  * Умный обработчик внешних подсказок (всплывающих сообщений под кнопкой чата).
@@ -64,6 +65,7 @@ export class OuterTips {
      * @param {Object} classes - CSS-классы
      * @param {string} classes.welcomeTipShow - Класс для отображения подсказки
      * @param {MessagesProvider} messagesProvider - Провайдер текстов и конфигурации
+     * @param {StorageKeysProvider} keysProvider - Провайдер ключей для хранения состояний и настроек
      * @param {EventEmitter} eventEmitter - Централизованный эмиттер событий
      * @param {Logger} logger - Логгер для отладки и диагностики
      *
@@ -76,18 +78,27 @@ export class OuterTips {
      *   console
      * );
      */
-    constructor(elements, classes, messagesProvider, eventEmitter, logger) {
+    constructor(
+        elements,
+        classes,
+        messagesProvider,
+        keysProvider,
+        eventEmitter,
+        logger
+    ) {
         this.toggleButton = elements.toggle;
         this.tipElement = elements.welcomeTip;
         this.tipClassShow = classes.welcomeTipShow;
 
         this.messagesProvider = messagesProvider;
+        this.keysProvider = keysProvider;
         this.eventEmitter = eventEmitter;
         this.logger = logger;
 
-        // Создаём движок решений
+        this.tipStorage = new TipStorage(this.keysProvider);
         this.decisionEngine = new OuterTipsDecisionEngine(messagesProvider);
-
+        console.log('this.keysProvider', this.keysProvider.listAll());
+        console.log('this.tipStorage', this.tipStorage);
         this.started = false;
         this.isShown = false;
         this.animation = null;
@@ -197,7 +208,7 @@ export class OuterTips {
      */
     getLastChatOpenTime() {
         const raw = localStorage.getItem(
-            STORAGE_KEYS.UI.OUTER_TIP.LAST_CHAT_OPEN
+            this.tipStorage.getKey('CHAT', 'CHAT_OPEN')
         );
         return raw ? parseInt(raw, 10) : null;
     }
@@ -209,8 +220,9 @@ export class OuterTips {
      */
     hasUserSentMessage() {
         return (
-            localStorage.getItem(STORAGE_KEYS.UI.OUTER_TIP.MESSAGE_SENT) ===
-            'true'
+            localStorage.getItem(
+                this.tipStorage.getKey('CHAT', 'MESSAGE_SENT')
+            ) === 'true'
         );
     }
 
@@ -355,7 +367,7 @@ export class OuterTips {
     markChatAsOpened() {
         try {
             localStorage.setItem(
-                STORAGE_KEYS.UI.OUTER_TIP.LAST_CHAT_OPEN,
+                this.tipStorage.getKey('CHAT', 'CHAT_OPEN'),
                 Date.now().toString()
             );
         } catch (e) {
@@ -375,7 +387,7 @@ export class OuterTips {
     markUserAsActive() {
         try {
             localStorage.setItem(
-                STORAGE_KEYS.UI.OUTER_TIP.MESSAGE_SENT,
+                this.tipStorage.getKey('CHAT', 'MESSAGE_SENT'),
                 'true'
             );
             this.markChatAsOpened();

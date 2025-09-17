@@ -3,6 +3,7 @@ import Api from './api/API';
 import UI from './ui/UI';
 import Controller from './controllers/Controller';
 import MessagesProvider from './providers/MessagesProvider';
+import StorageKeysProvider from './providers/StorageKeyProvider';
 import { configureSanitizer } from './utils/sanitize';
 import { defaultSelectors } from './config/';
 import resolveLogger from './utils/resolveLogger';
@@ -197,6 +198,7 @@ export default class AIChat {
     /**
      * Создаёт и сохраняет экземпляры ключевых сервисов:
      * - MessagesProvider — управление сообщениями
+     * - StorageKeysProvider — управление ключами в хранилище
      * - UI — отображение интерфейса
      * - Api — взаимодействие с сервером
      * - Controller — логика управления потоком
@@ -206,10 +208,12 @@ export default class AIChat {
      */
     #initializeServices() {
         this.messagesProvider = new MessagesProvider(this.messagesOptions);
+        this.keysProvider = new StorageKeysProvider();
 
         this.ui = new UI(
             this.container,
             this.messagesProvider,
+            this.keysProvider,
             {
                 ...this.apiOptions,
                 ...this.themeOptions,
@@ -221,6 +225,7 @@ export default class AIChat {
 
         this.api = new Api(
             this.messagesProvider,
+            this.keysProvider,
             {
                 api: { ...this.apiOptions },
             },
@@ -232,6 +237,7 @@ export default class AIChat {
             this.ui,
             this.api,
             this.messagesProvider,
+            this.keysProvider,
             this.eventEmitter,
             this.logger
         );

@@ -29,7 +29,8 @@ export default class UI {
      * Создаёт экземпляр UI.
      *
      * @param {HTMLElement} container - Корневой DOM-элемент чата.
-     * @param {Object} messagesProvider - Сервис для работы с сообщениями (загрузка, добавление).
+     * @param {MessagesProvider} messagesProvider - Сервис для работы с сообщениями (загрузка, добавление).
+     * @param {StorageKeysProvider} keysProvider - Провайдер ключей для хранения состояний и настроек.
      * @param {Object} [options={}] - Дополнительные настройки.
      * @param {Object} [options.classes] - Кастомные CSS-классы для переопределения стилей.
      * @param {Object} [options.selectors] - Селекторы для поиска внутренних элементов (input, toggle и т.д.).
@@ -50,6 +51,7 @@ export default class UI {
     constructor(
         container,
         messagesProvider,
+        keysProvider,
         options = {},
         eventEmitter,
         logger
@@ -73,9 +75,15 @@ export default class UI {
 
         /**
          * Провайдер сообщений — источник данных для отображения.
-         * @type {Object}
+         * @type {MessagesProvider}
          */
         this.messagesProvider = messagesProvider;
+
+        /**
+         * Провайдер ключей для доступа к STORAGE_KEYS.
+         * @type {StorageKeysProvider}
+         */
+        this.keysProvider = keysProvider;
 
         /**
          * Шина событий для внутренней коммуникации.
@@ -152,6 +160,7 @@ export default class UI {
         this.innerTips = new InnerTips(
             this,
             this.messagesProvider,
+            this.keysProvider,
             this.elements.messages,
             this.eventEmitter,
             this.logger
@@ -161,6 +170,7 @@ export default class UI {
             this.elements,
             this.classes,
             this.messagesProvider,
+            this.keysProvider,
             this.eventEmitter,
             this.logger
         );

@@ -33,10 +33,7 @@ export default class MessagesProvider {
      * });
      */
     constructor(customMessages = {}) {
-        this.messages = this.mergeWithDefaults(
-            MESSAGES,
-            customMessages
-        );
+        this.messages = this.mergeWithDefaults(MESSAGES, customMessages);
     }
 
     /**

@@ -12,13 +12,24 @@ export class InnerTips {
     /**
      * Создаёт экземпляр AutoGreeting.
      *
-     * @param {Object} ui - Экземпляр UI для управления интерфейсом чата.
-     * @param {Object} messagesProvider - Провайдер текстов и задержек.
+     * @param {UI} ui - Экземпляр UI для управления интерфейсом чата.
+     * @param {MessagesProvider} messagesProvider - Провайдер текстов и задержек.
+     * @param {StorageKeysProvider} keysProvider - Провайдер ключей для хранения состояний и настроек.
+     * @param {Evented} eventEmitter - Шина событий для внутренней коммуникации.
+     * @param {Object} logger - Логгер для вывода предупреждений и ошибок.
      * @param {HTMLElement} messagesContainer - DOM-элемент, куда добавляются сообщения.
      */
-    constructor(ui, messagesProvider, messagesContainer, eventEmitter, logger) {
+    constructor(
+        ui,
+        messagesProvider,
+        keysProvider,
+        messagesContainer,
+        eventEmitter,
+        logger
+    ) {
         this.ui = ui;
         this.messagesProvider = messagesProvider;
+        this.keysProvider = keysProvider;
         this.eventEmitter = eventEmitter;
         this.logger = logger;
 

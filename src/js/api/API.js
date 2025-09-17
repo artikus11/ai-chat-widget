@@ -1,4 +1,4 @@
-import { EVENTS, STORAGE_KEYS } from '../config';
+import { EVENTS } from '../config';
 /**
  * @typedef {Object} MessagesProvider
  * @property {function(string): string} getText - Возвращает локализованное сообщение по ключу.
@@ -33,8 +33,27 @@ export default class Api {
      * @param {string} options.api.url - Базовый URL для запросов (обязательно).
      * @param {string} options.api.domain - Домен для заголовка X-API-DOMAIN.
      * @param {MessagesProvider} messagesProvider - Провайдер локализованных сообщений
+     * @param {StorageKeysProvider} keysProvider - Провайдер ключей для localStorage
+     * @param {Evented} eventEmitter - Экземпляр Evented для эмита событий.
+     * @param {Object} logger - Логгер с методами info, warn, error.
+     *
+     * @throws {Error} Если не указан обязательный параметр `api.url`.
+     *
+     * @example
+     * const api = new Api(messagesProvider, {
+     *   api: {
+     *     url: 'https://api.example.com/chat',
+     *     domain: 'example.com'
+     *   }
+     * });
      */
-    constructor(messagesProvider, options = {}, eventEmitter, logger) {
+    constructor(
+        messagesProvider,
+        keysProvider,
+        options = {},
+        eventEmitter,
+        logger
+    ) {
         if (!options.api?.url) {
             throw new Error('api.url is required');
         }
@@ -43,6 +62,7 @@ export default class Api {
         this.domain = options.api.domain;
 
         this.messagesProvider = messagesProvider;
+        this.keysProvider = keysProvider;
         this.eventEmitter = eventEmitter;
         this.logger = logger;
 
@@ -58,7 +78,7 @@ export default class Api {
      */
     loadChatId() {
         try {
-            return localStorage.getItem(STORAGE_KEYS.API.ID);
+            return localStorage.getItem(this.keysProvider.get('API', 'ID'));
         } catch {
             this.logger.warn('localStorage недоступен');
             return null;
@@ -72,7 +92,7 @@ export default class Api {
      */
     saveChatId(id) {
         try {
-            localStorage.setItem(STORAGE_KEYS.API.ID, id);
+            localStorage.setItem(this.keysProvider.get('API', 'ID'), id);
             this.chatId = id;
         } catch {
             this.logger.warn('Не удалось сохранить chatId');

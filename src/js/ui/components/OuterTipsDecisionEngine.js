@@ -77,7 +77,7 @@ export class OuterTipsDecisionEngine {
                 : Infinity;
 
         const recentlyActive =
-            timeSinceOpen >= 1000 * 60 * 2 &&  // был хотя бы 2 мин
+            timeSinceOpen >= 1000 * 60 * 2 && // был хотя бы 2 мин
             timeSinceOpen <= 1000 * 60 * 10; // и не больше 10 мин назад
         const tooLongAgo = timeSinceOpen >= 1000 * 60 * 60 * 24 * 7; // >7 дней
 

@@ -8,16 +8,18 @@ import { EVENTS } from '../config';
 export default class Controller {
     /**
      * Создаёт контроллер
-     * @param {Object} ui - Экземпляр пользовательского интерфейса
-     * @param {Object} api - Экземпляр API для работы с сервером
+     * @param {UI} ui - Экземпляр пользовательского интерфейса
+     * @param {API} api - Экземпляр API для работы с сервером
      * @param {MessagesProvider} messagesProvider - Провайдер локализованных сообщений
+     * @param {StorageKeysProvider} keysProvider - Провайдер ключей для хранения состояний и настроек
      * @param {Object} options - Дополнительные опции
      */
-    constructor(ui, api, messagesProvider, eventEmitter, logger) {
+    constructor(ui, api, messagesProvider, keysProvider, eventEmitter, logger) {
         this.ui = ui;
         this.api = api;
 
         this.messagesProvider = messagesProvider;
+        this.keysProvider = keysProvider;
         this.eventEmitter = eventEmitter;
         this.logger = logger;
 

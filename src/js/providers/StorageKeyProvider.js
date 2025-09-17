@@ -1,10 +1,10 @@
-import { STORAGE_KEYS } from "@js/config";
+import { STORAGE_KEYS } from '@js/config';
 
 /**
  * Универсальный провайдер для доступа к STORAGE_KEYS.
  * Позволяет получать ключи по секции и имени.
  */
-export default class StorfgeKeysProvider {
+export default class StorageKeysProvider {
     constructor(keys = STORAGE_KEYS) {
         this.keys = keys;
     }
@@ -43,5 +43,14 @@ export default class StorfgeKeysProvider {
      */
     listKeys(section) {
         return Object.keys(this.keys[section] || {});
+    }
+
+    /**
+     * Returns all stored keys.
+     *
+     * @returns {Array} An array containing all the keys managed by the provider.
+     */
+    listAll() {
+        return this.keys;
     }
 }

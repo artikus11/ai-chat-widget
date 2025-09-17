@@ -30,16 +30,7 @@ export function createMockStorage() {
     };
 }
 
-function createMemoryStorage() {
-    let store = {};
-    return {
-        getItem: (key) => (key in store ? store[key] : null),
-        setItem: (key, value) => { store[key] = value; },
-        removeItem: (key) => { delete store[key]; },
-        clear: () => { store = {}; },
-        _dump: () => ({ ...store }),
-    };
-}
+
 /**
  * Создаёт мок провайдера ключей (StorageKeysProvider).
  *

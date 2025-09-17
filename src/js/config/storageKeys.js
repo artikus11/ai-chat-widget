@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
         CHAT_OPEN: withPrefix('chat:open'),
         CHAT_CLOSE: withPrefix('chat:open'),
         MESSAGE_SENT: withPrefix('chat:sent-message'),
+        LAST_MESSAGE_SENT: withPrefix('chat:last-sent-message'),
     },
     OUTER_TIP: {
         WELCOME_SHOWN: withPrefix('outer-tip:welcome-shown'),

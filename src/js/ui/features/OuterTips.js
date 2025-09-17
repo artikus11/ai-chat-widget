@@ -156,9 +156,42 @@ export class OuterTips {
      * @property {boolean} hasSentMessage - Было ли отправлено хотя бы одно сообщение
      */
     getCurrentState() {
+        const now = Date.now();
+
+        const lastChatOpenTime = this.getLastChatOpenTime();
+        const lastMessageSentTime =
+            this.userActivityStorage.getLastMessageSentTime();
+        const hasSentMessage = lastMessageSentTime !== null;
+
+        const timeSinceLastOpen =
+            lastChatOpenTime !== null ? now - lastChatOpenTime : null;
+        const timeSinceLastMessage = hasSentMessage
+            ? now - lastMessageSentTime
+            : null;
+
+        const tenMinutes = 10 * 60 * 1000;
+        const oneWeek = 7 * 24 * 60 * 60 * 1000;
+
         return {
-            lastChatOpenTime: this.getLastChatOpenTime(),
-            hasSentMessage: this.hasUserSentMessage(),
+            lastChatOpenTime,
+            lastMessageSentTime,
+            hasSentMessage,
+
+            timeSinceLastOpen,
+            timeSinceLastMessage,
+
+            isRecentlyReturned:
+                lastChatOpenTime !== null &&
+                timeSinceLastOpen >= 2 * 60 * 1000 &&
+                timeSinceLastOpen <= 10 * 60 * 1000,
+
+            wasInactiveLongEnough:
+                lastChatOpenTime !== null && timeSinceLastOpen > 10 * 60 * 1000,
+
+            isEligibleForReconnect:
+                hasSentMessage &&
+                timeSinceLastMessage > tenMinutes &&
+                timeSinceLastMessage <= oneWeek,
         };
     }
 
@@ -353,6 +386,18 @@ export class OuterTips {
                 this.hide();
             }
         });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                // Пользователь вернулся на страницу
+                this.scheduleActiveReturn();
+            }
+        });
+
+        // Или дополнительно:
+        window.addEventListener('focus', () => {
+            this.scheduleActiveReturn();
+        });
     }
 
     /**
@@ -498,6 +543,51 @@ export class OuterTips {
             }
             this.showMessageByType('followup');
         }, initialDelay);
+    }
+
+    /**
+     * Планирует проверку для показа `active_return`, если пользователь вернулся на страницу.
+     *
+     * Проверяет, писал ли пользователь ранее, не открыт ли чат и не показывали ли уже `active_return`.
+     * Если все условия выполнены, использует `decisionEngine` для определения возможности показа.
+     *
+     * @returns {void}
+     */
+    scheduleActiveReturn() {
+        // Задержка на случай, если это просто переключение между вкладками
+        setTimeout(() => {
+            const state = this.getCurrentState();
+
+            // Только если он уже писал
+            if (!state.hasSentMessage) {
+                return;
+            }
+
+            // Не показывать, если чат уже открыт
+            if (this.isChatOpen()) {
+                // нужно реализовать
+                return;
+            }
+
+            // Не показывать, если уже показывали
+            if (this.tipStorage.wasShown('active_return', 'out')) {
+                return;
+            }
+
+            // Можно показать?
+            if (!this.canRender() || this.isShown) {
+                return;
+            }
+
+            // Проверим через decisionEngine
+            const messageType = this.decisionEngine.determine(state, {
+                context: 'return', // опционально: подсказка движку
+            });
+
+            if (messageType === 'active_return') {
+                this.showMessageByType('active_return');
+            }
+        }, 500); // небольшая задержка, чтобы избежать ложных срабатываний
     }
 
     /**

@@ -24,18 +24,6 @@ export class UserActivityStorage {
     }
 
     /**
-     * Получает временную метку последнего открытия чата.
-     *
-     * @returns {number|null} Временная метка (в миллисекундах) последнего открытия чата или null, если недоступно.
-     */
-    getLastChatOpenTime() {
-        const key = this.keysProvider.get('CHAT', 'CHAT_OPEN');
-        if (!key) return null;
-        const raw = this.storage.getItem(key);
-        return raw ? parseInt(raw, 10) : null;
-    }
-
-    /**
      * Отмечает, что сообщение в чате было отправлено, устанавливая флаг в хранилище.
      * Получает ключ хранилища с помощью keysProvider и устанавливает его значение в 'true'.
      */
@@ -44,6 +32,46 @@ export class UserActivityStorage {
         if (key) {
             this.storage.setItem(key, 'true');
         }
+    }
+
+    /**
+     * Отмечает время отправки последнего сообщения.
+     * Сохраняет текущую временную метку (в миллисекундах) в хранилище под ключом 'LAST_MESSAGE_SENT'.
+     */
+    markLastMessageSent() {
+        this.storage.setItem(
+            this.keysProvider.get('CHAT', 'LAST_MESSAGE_SENT'),
+            Date.now().toString()
+        );
+    }
+
+    /**
+     * Получает временную метку последнего открытия чата.
+     *
+     * @returns {number|null} Временная метка (в миллисекундах) последнего открытия чата или null, если недоступно.
+     */
+    getLastChatOpenTime() {
+        const key = this.keysProvider.get('CHAT', 'CHAT_OPEN');
+        if (!key) {
+            return null;
+        }
+        const raw = this.storage.getItem(key);
+        return raw ? parseInt(raw, 10) : null;
+    }
+
+    /**
+     * Получает временную метку последнего отправленного сообщения.
+     *
+     * @returns {number|null} Временная метка (в миллисекундах) последнего отправленного сообщения или null, если недоступно.
+     */
+    getLastMessageSentTime() {
+        const key = this.keysProvider.get('CHAT', 'CHAT_OPEN');
+        if (!key) {
+            return null;
+        }
+
+        const raw = this.storage.getItem(key);
+        return raw ? parseInt(raw, 10) : null;
     }
 
     /**

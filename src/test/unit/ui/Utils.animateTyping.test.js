@@ -8,6 +8,7 @@ describe('Utils > animateTyping', () => {
     beforeEach(() => {
         // Очищаем моки
         vi.useFakeTimers();
+        vi.spyOn(Utils, 'getRandomSpeed').mockImplementation(speed => speed);
     });
 
     afterEach(() => {

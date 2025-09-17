@@ -203,13 +203,15 @@ export default class MessagesProvider {
      * @param {'in'|'out'} namespace - Пространство имён.
      * @param {string} type - Тип сообщения.
      * @returns {boolean} `true`, если сообщение существует, иначе `false`.
+     * Если сообщение отключено (имеет `disable: true`), возвращает `false`.
      *
      * @example
      * provider.has('in', 'error'); // → true
      * provider.has('out', 'nonexistent'); // → false
      */
-    has(namespace, type) {
-        return !!this.messages[namespace]?.[type];
+    has(category, type) {
+        const message = this.messages[category]?.[type];
+        return !!message && !message.disable;
     }
 
     /**

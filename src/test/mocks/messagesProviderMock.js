@@ -30,7 +30,7 @@ const DEFAULT_TEST_MESSAGES = {
  * });
  */
 export function createMessagesProviderMock(customMessages = {}, baseMessages = DEFAULT_TEST_MESSAGES) {
-    return new MessagesProvider(customMessages, baseMessages);
+    return new MessagesProvider(customMessages ? { ...baseMessages, ...customMessages } : baseMessages);
 }
 
 /**

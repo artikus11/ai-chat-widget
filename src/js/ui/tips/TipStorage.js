@@ -21,7 +21,7 @@ export class TipStorage {
             followup: ['INNER_TIP', 'FOLLOWUP_SHOWN'],
             error: ['INNER_TIP', 'ERROR_SHOWN'],
             fallback: ['INNER_TIP', 'FALLBACK_SHOWN'],
-        }
+        },
     };
 
     /**
@@ -34,7 +34,7 @@ export class TipStorage {
      * storage.wasShown('welcome', 'out'); // проверить, была ли показана подсказка "welcome" из категории "out"
      * storage.getLastShownTime('welcome', 'out'); // получить timestamp последнего показа  "welcome" из категории "out"
      * storage.getRecord('welcome', 'out'); // получить полную запись о показе подсказки "welcome" из категории "out"
-     * storage.clear('welcome', 'out'); // очистить запись о показе подсказки "welcome" из категории "out"  
+     * storage.clear('welcome', 'out'); // очистить запись о показе подсказки "welcome" из категории "out"
      */
     constructor(keysProvider, storage = localStorage, logger = console) {
         this.keysProvider = keysProvider;
@@ -53,7 +53,9 @@ export class TipStorage {
     #getKey(type, category) {
         const entry = TipStorage.TIP_STORAGE_MAP[category]?.[type];
         if (!entry) {
-            this.logger.warn(`[TipStorage] Unknown tip type "${type}" in category "${category}"`);
+            this.logger.warn(
+                `[TipStorage] Unknown tip type "${type}" in category "${category}"`
+            );
             return null;
         }
 
@@ -73,7 +75,10 @@ export class TipStorage {
             const raw = this.storage.getItem(key);
             return raw ? JSON.parse(raw) : null;
         } catch (e) {
-            this.logger.warn(`[TipStorage] Failed to read from storage (key: ${key}):`, e);
+            this.logger.warn(
+                `[TipStorage] Failed to read from storage (key: ${key}):`,
+                e
+            );
             return null;
         }
     }
@@ -91,11 +96,13 @@ export class TipStorage {
             this.storage.setItem(key, JSON.stringify(data));
             return true;
         } catch (e) {
-            this.logger.warn(`[TipStorage] Failed to write to storage (key: ${key}):`, e);
+            this.logger.warn(
+                `[TipStorage] Failed to write to storage (key: ${key}):`,
+                e
+            );
             return false;
         }
     }
-
 
     /**
      * Отметить, что подсказка была показана.
@@ -115,7 +122,7 @@ export class TipStorage {
             type,
             category,
             timestamp: new Date().toISOString(),
-            version: 1
+            version: 1,
         };
 
         return this.#write(key, data);

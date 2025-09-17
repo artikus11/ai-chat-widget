@@ -27,7 +27,7 @@ export class TipCooldown {
      * Создаёт новый экземпляр кулдауна.
      * @param {MessagesProvider} messagesProvider - Провайдер сообщений, содержащий тексты и настройки.
      * @param {TipStorage} storage - Хранилище для сохранения меток показа.
-     * @param {Object} logger - Логгер для вывода предупреждений и ошибок.          
+     * @param {Object} logger - Логгер для вывода предупреждений и ошибок.
      * @example
      * const cooldown = new TipCooldown(messagesProvider, tipStorage);
      */
@@ -39,12 +39,12 @@ export class TipCooldown {
 
     /**
      * Получает значение кулдауна (в часах) для указанного типа сообщения.
-     * Если в провайдере сообщений не задано, возвращает значение по умолчанию.         
+     * Если в провайдере сообщений не задано, возвращает значение по умолчанию.
      * @param {string} type - Тип сообщения (например, 'welcome', 'followup').
      * @param {string} [category='out'] - Категория сообщения ('in' или 'out').
      * @returns {number} Кулдаун в часах.
      * @example
-     * cooldown.getCooldownHours('welcome') // → 24  
+     * cooldown.getCooldownHours('welcome') // → 24
      * cooldown.getCooldownHours('followup') // → 6
      */
     getCooldownHours(type, category = 'out') {
@@ -65,20 +65,20 @@ export class TipCooldown {
      * @param {string} [category='out'] - Категория сообщения ('in' или 'out').
      * @returns {boolean} True, если сообщение можно показать, иначе false.
      * @example
-     * cooldown.canShow('welcome') // → true или false  
-     * cooldown.canShow('followup') // → true или false 
+     * cooldown.canShow('welcome') // → true или false
+     * cooldown.canShow('followup') // → true или false
      */
     canShow(type, category = 'out') {
         const cooldownHours = this.getCooldownHours(type, category);
 
         if (cooldownHours === 0) {
-            return true
-        };
+            return true;
+        }
 
         const last = this.storage.getLastShownTime(type, category);
         if (!last) {
-            return true
-        };
+            return true;
+        }
 
         const hoursSince = (Date.now() - last) / (1000 * 60 * 60);
         return hoursSince >= cooldownHours;
@@ -88,7 +88,7 @@ export class TipCooldown {
         const last = this.storage.getLastShownTime(type, category);
         if (!last) {
             return false;
-        };
+        }
 
         const hoursSince = (Date.now() - last) / (1000 * 60 * 60);
         return hoursSince < hours;

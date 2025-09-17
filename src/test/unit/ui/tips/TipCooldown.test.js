@@ -6,23 +6,6 @@ import { createMockStorage } from '@test/mocks/storageMocks';
 import StorageKeysProvider from '@js/providers/StorageKeyProvider';
 import { createMockLogger } from '@test/mocks/loggerMock';
 
-// Пример ключей — адаптируй под свои реальные ключи из проекта
-const MOCK_KEYS = {
-    OUTER_TIP: {
-        WELCOME_SHOWN: 'ui:outer-tip:welcome-shown',
-        FOLLOWUP_SHOWN: 'ui:outer-tip:followup-shown',
-        RETURNING_SHOWN: 'ui:outer-tip:returning-shown',
-        RECONNECT_SHOWN: 'ui:outer-tip:reconnect-shown',
-        ACTIVE_RETURN_SHOWN: 'ui:outer-tip:active-return-shown',
-    },
-    INNER_TIP: {
-        GREETING_SHOWN: 'ui:inner-tip:greeting-shown',
-        FOLLOWUP_SHOWN: 'ui:inner-tip:followup-shown',
-        ERROR_SHOWN: 'ui:inner-tip:error-shown',
-        FALLBACK_SHOWN: 'ui:inner-tip:fallback-shown',
-    },
-};
-
 describe('TipCooldown', () => {
     let cooldown;
     let messagesProvider;

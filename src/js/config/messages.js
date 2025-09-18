@@ -29,7 +29,7 @@ export const MESSAGES = {
         welcome: {
             // 1. Впервые видит → через 3 сек
             text: 'Готов помочь! Нажмите, чтобы начать чат',
-            delay: 10000,
+            delay: 1000,
             duration: 8000,
             disable: false,
         },

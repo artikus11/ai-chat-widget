@@ -5,6 +5,7 @@ import { TipStorage } from '../tips/TipStorage';
 import { UserActivityStorage } from '../tips/UserActivityStorage';
 import { outerRules } from '../tips/rules';
 import { TipCooldown } from '../tips/TipCooldown';
+import { TipPresenter } from '@js/services/TipPresenter';
 
 /**
  * Умный обработчик внешних подсказок (всплывающих сообщений под кнопкой чата).
@@ -72,19 +73,21 @@ export class OuterTips {
      *
      */
     constructor(ui, messagesProvider, keysProvider, eventEmitter, logger) {
-        const { elements, classes } = ui;
+        // const { elements, classes } = ui;
 
         this.ui = ui;
 
-        this.toggleButton = elements.toggle;
-        this.tipElement = elements.welcomeTip;
-        this.tipClassShow = classes.welcomeTipShow;
+        // this.toggleButton = elements.toggle;
+        // this.tipElement = elements.welcomeTip;
+        // this.tipClassShow = classes.welcomeTipShow;
 
         this.messagesProvider = messagesProvider;
         this.keysProvider = keysProvider;
         this.eventEmitter = eventEmitter;
         this.logger = logger;
 
+        this.presenter = new TipPresenter(ui, logger);
+        console.log('this.presenter:', this.presenter);
         this.tipStorage = new TipStorage(this.keysProvider);
         this.userActivityStorage = new UserActivityStorage(this.keysProvider);
 
@@ -105,11 +108,11 @@ export class OuterTips {
         );
 
         this.started = false;
-        this.isShown = false;
-        this.animation = null;
-        this.showTimeout = null;
-        this.hideTimeout = null;
-        this.followUpTimeout = null;
+        // this.isShown = false;
+        // this.animation = null;
+        // this.showTimeout = null;
+        // this.hideTimeout = null;
+        // this.followUpTimeout = null;
 
         this.bindEvents();
         this.listenForUserActivity();
@@ -141,7 +144,7 @@ export class OuterTips {
 
             this.logger.warn('[WELCOME] Определён тип:', messageType);
 
-            if (messageType && this.canRender() && !this.isShown) {
+            if (messageType && this.presenter.canRender() && !this.presenter.isShown) {
                 this.showMessage(messageType);
                 this.scheduleAutoHide(messageType);
 
@@ -270,26 +273,20 @@ export class OuterTips {
      * @emits EVENTS.UI.OUTER_TIP_SHOW - Когда сообщение полностью показано
      */
     showMessage(type) {
-        if (this.isShown) {
+
+        const text = this.messagesProvider.getText('out', type);
+
+        if (!text) {
+            this.logger.warn('[OuterTips] No text for type:', type);
             return;
         }
 
-        const text = this.messagesProvider.getText('out', type);
-        this.tipElement.textContent = '';
-        this.tipElement.classList.add(this.tipClassShow);
-
-        this.animation = Utils.animateTyping(text);
-
-        this.animation.on(EVENTS.UI.TYPING_UPDATE, typedText => {
-            this.tipElement.textContent = typedText;
-        });
-
-        this.animation.on(EVENTS.UI.TYPING_FINISH, () => {
+        this.presenter.show(text, () => {
+            // Анимация завершена
             this.eventEmitter.emit(EVENTS.UI.OUTER_TIP_SHOW, { type });
         });
 
         this.markAsShown(type);
-        this.isShown = true;
     }
 
     /**
@@ -327,22 +324,25 @@ export class OuterTips {
      * @emits EVENTS.UI.OUTER_TIP_HIDE
      */
     hide() {
-        if (!this.isShown) {
-            return;
-        }
+        // if (!this.isShown) {
+        //     return;
+        // }
 
-        if (this.animation?.stop) {
-            this.animation.stop();
-        }
-        this.animation = null;
+        // if (this.animation?.stop) {
+        //     this.animation.stop();
+        // }
+        // this.animation = null;
 
-        this.tipElement.classList.remove(this.tipClassShow);
-        this.isShown = false;
+        // this.tipElement.classList.remove(this.tipClassShow);
+        // this.isShown = false;
 
-        clearTimeout(this.hideTimeout);
+        // clearTimeout(this.hideTimeout);
 
-        this.unbindEvents();
+        // this.unbindEvents();
 
+        // this.eventEmitter.emit(EVENTS.UI.OUTER_TIP_HIDE);
+
+        this.presenter.hide();
         this.eventEmitter.emit(EVENTS.UI.OUTER_TIP_HIDE);
     }
 
@@ -353,8 +353,8 @@ export class OuterTips {
      * @returns {void}
      */
     bindEvents() {
-        this._hideHandler = () => this.hide();
-        this.toggleButton.addEventListener('click', this._hideHandler);
+        // this._hideHandler = () => this.hide();
+        // this.toggleButton.addEventListener('click', this._hideHandler);
     }
 
     /**
@@ -364,10 +364,10 @@ export class OuterTips {
      * @returns {void}
      */
     unbindEvents() {
-        if (this._hideHandler) {
-            this.toggleButton.removeEventListener('click', this._hideHandler);
-            this._hideHandler = null;
-        }
+        // if (this._hideHandler) {
+        //     this.toggleButton.removeEventListener('click', this._hideHandler);
+        //     this._hideHandler = null;
+        // }
     }
 
     /**
@@ -599,8 +599,8 @@ export class OuterTips {
         clearTimeout(this.followUpTimeout);
 
         this.followUpTimeout = null;
-        this.unbindEvents();
 
+        this.presenter.destroy();
         this.eventEmitter.emit(EVENTS.UI.OUTER_TIP_DESTROY);
     }
 }

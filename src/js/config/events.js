@@ -22,6 +22,19 @@ export const EVENTS = {
         OUTER_TIP_HIDE: withPrefix('ui:outer-tip:hide'),
         OUTER_TIP_DESTROY: withPrefix('ui:outer-tip:destroy'),
 
+        // --- События планировщика (новые) ---
+        OUTER_TIP_SCHEDULE_SHOW: withPrefix('ui:outer-tip:schedule:show'),
+        OUTER_TIP_AUTO_HIDE: withPrefix('ui:outer-tip:auto-hide'),
+        OUTER_TIP_FOLLOW_UP_TRIGGER: withPrefix(
+            'ui:outer-tip:follow-up:trigger'
+        ),
+        OUTER_TIP_ACTIVE_RETURN_TRIGGER: withPrefix(
+            'ui:outer-tip:active-return:trigger'
+        ),
+        OUTER_TIP_RETURNING_TRIGGER: withPrefix(
+            'ui:outer-tip:returning:trigger'
+        ),
+
         TYPING_UPDATE: withPrefix('ui:typing:update'),
         TYPING_FINISH: withPrefix('ui:typing:finish'),
         TYPING_STOP: withPrefix('ui:typing:stop'),

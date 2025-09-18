@@ -167,8 +167,7 @@ export default class UI {
         );
 
         this.outerTips = new OuterTips(
-            this.elements,
-            this.classes,
+            this,
             this.messagesProvider,
             this.keysProvider,
             this.eventEmitter,

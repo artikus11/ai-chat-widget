@@ -1,8 +1,10 @@
 import { Utils } from '../utils';
 import { EVENTS } from '../../config';
-import { OuterTipsDecisionEngine } from '../components/OuterTipsDecisionEngine';
+import { DecisionEngine } from '@js/services/DecisionEngine';
 import { TipStorage } from '../tips/TipStorage';
 import { UserActivityStorage } from '../tips/UserActivityStorage';
+import { outerRules } from '../tips/rules';
+import { TipCooldown } from '../tips/TipCooldown';
 
 /**
  * Умный обработчик внешних подсказок (всплывающих сообщений под кнопкой чата).
@@ -60,33 +62,20 @@ export class OuterTips {
     /**
      * Создаёт экземпляр компонента управления внешними подсказками.
      *
-     * @param {Object} elements - Объект с DOM-элементами
-     * @param {HTMLElement} elements.toggle - Кнопка открытия чата
-     * @param {HTMLElement} elements.welcomeTip - Элемент подсказки (текст)
-     * @param {Object} classes - CSS-классы
-     * @param {string} classes.welcomeTipShow - Класс для отображения подсказки
+     * @param {UI} ui - Контекст UI (элементы, классы, методы)
      * @param {MessagesProvider} messagesProvider - Провайдер текстов и конфигурации
      * @param {StorageKeysProvider} keysProvider - Провайдер ключей для хранения состояний и настроек
      * @param {EventEmitter} eventEmitter - Централизованный эмиттер событий
      * @param {Logger} logger - Логгер для отладки и диагностики
-     *
      * @example
-     * const tips = new OuterTips(
-     *   { toggle: buttonEl, welcomeTip: tipEl },
-     *   { welcomeTipShow: 'visible' },
-     *   messagesProvider,
-     *   eventEmitter,
-     *   console
-     * );
+     * const tips = new OuterTips(ui, messagesProvider, keysProvider, eventEmitter, console);
+     *
      */
-    constructor(
-        elements,
-        classes,
-        messagesProvider,
-        keysProvider,
-        eventEmitter,
-        logger
-    ) {
+    constructor(ui, messagesProvider, keysProvider, eventEmitter, logger) {
+        const { elements, classes } = ui;
+
+        this.ui = ui;
+
         this.toggleButton = elements.toggle;
         this.tipElement = elements.welcomeTip;
         this.tipClassShow = classes.welcomeTipShow;
@@ -98,7 +87,22 @@ export class OuterTips {
 
         this.tipStorage = new TipStorage(this.keysProvider);
         this.userActivityStorage = new UserActivityStorage(this.keysProvider);
-        this.decisionEngine = new OuterTipsDecisionEngine(messagesProvider);
+
+        this.tipCooldown = new TipCooldown(
+            this.messagesProvider,
+            this.tipStorage,
+            this.logger
+        );
+
+        this.decisionEngine = new DecisionEngine(
+            messagesProvider,
+            outerRules,
+            {
+                storage: this.tipStorage,
+                cooldown: this.tipCooldown,
+            },
+            this.logger
+        );
 
         this.started = false;
         this.isShown = false;
@@ -291,7 +295,7 @@ export class OuterTips {
     /**
      * Принудительно показывает сообщение указанного типа (например, по команде).
      *
-     * Проверяет возможность показа через `decisionEngine`.
+     * Проверяет возможность показа через .
      *
      * @param {string} type - Тип сообщения
      * @returns {void}
@@ -300,10 +304,11 @@ export class OuterTips {
      * tips.showMessageByType('reconnect');
      */
     showMessageByType(type) {
-        if (
-            !this.messagesProvider.has('out', type) ||
-            !this.decisionEngine.canShow(type)
-        ) {
+        if (!this.messagesProvider.has('out', type)) {
+            return;
+        }
+
+        if (this.tipStorage.wasShown(type, 'out')) {
             return;
         }
 
@@ -406,17 +411,6 @@ export class OuterTips {
      * @returns {void}
      */
     markChatAsOpened() {
-        // try {
-        //     localStorage.setItem(
-        //         this.tipStorage.getKey('CHAT', 'CHAT_OPEN'),
-        //         Date.now().toString()
-        //     );
-        // } catch (e) {
-        //     this.logger.warn(
-        //         '[WelcomeTip] Не удалось сохранить время открытия:',
-        //         e
-        //     );
-        // }
         this.userActivityStorage.markChatOpen();
     }
 
@@ -428,10 +422,6 @@ export class OuterTips {
      */
     markUserAsActive() {
         try {
-            // localStorage.setItem(
-            //     this.tipStorage.getKey('CHAT', 'MESSAGE_SENT'),
-            //     'true'
-            // );
             this.userActivityStorage.markMessageSent();
             this.markChatAsOpened();
         } catch (e) {
@@ -449,26 +439,8 @@ export class OuterTips {
      * @returns {void}
      */
     markAsShown(type) {
-        const key = this.decisionEngine.getStorageKey(type);
-
-        if (!key) {
-            return;
-        }
-
         try {
-            // localStorage.setItem(
-            //     key,
-            //     JSON.stringify({
-            //         type,
-            //         timestamp: new Date().toISOString(),
-            //     })
-            // );
-
             this.tipStorage.markAsShown(type, 'out');
-
-            if (type === 'welcome') {
-                this.incrementWelcomeCount();
-            }
         } catch (e) {
             this.logger.warn(
                 '[WelcomeTip] Не удалось сохранить факт показа:',
@@ -564,7 +536,7 @@ export class OuterTips {
             }
 
             // Не показывать, если чат уже открыт
-            if (this.isChatOpen()) {
+            if (this.ui.isOpen()) {
                 // нужно реализовать
                 return;
             }

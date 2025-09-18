@@ -20,10 +20,11 @@ export class DecisionEngine {
      * @example
      * const engine = new DecisionEngine(messagesProvider, rules, { storage, cooldown });
      * */
-    constructor(messagesProvider, rules, helpers) {
+    constructor(messagesProvider, rules, helpers, logger = console) {
         this.messagesProvider = messagesProvider;
         this.rules = rules;
         this.helpers = helpers; // { storage, cooldown }
+        this.logger = logger;
     }
 
     /**

@@ -49,7 +49,10 @@ export class TipPresenter {
         };
 
         this.toggleButton.addEventListener('click', this._hideHandler);
-        console.log('✅ [bind] addEventListener с функцией:', this._hideHandler);
+        console.log(
+            '✅ [bind] addEventListener с функцией:',
+            this._hideHandler
+        );
     }
 
     /**
@@ -59,7 +62,10 @@ export class TipPresenter {
      * @returns {void}
      */
     unbindEvents() {
-        console.log('🔧 [unbind] Пытаюсь удалить обработчик:', this._hideHandler);
+        console.log(
+            '🔧 [unbind] Пытаюсь удалить обработчик:',
+            this._hideHandler
+        );
         if (this._hideHandler && this.toggleButton) {
             const handler = this._hideHandler;
             this.toggleButton.removeEventListener('click', handler);

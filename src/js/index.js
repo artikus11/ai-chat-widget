@@ -3,7 +3,7 @@ import Api from './api/API';
 import UI from './ui/UI';
 import Controller from './controllers/Controller';
 import MessagesProvider from './providers/MessagesProvider';
-import StorageKeysProvider from './providers/StorageKeyProvider';
+import StorageKeysProvider from './providers/StorageKeysProvider';
 import { configureSanitizer } from './utils/sanitize';
 import { defaultSelectors } from './config/';
 import resolveLogger from './utils/resolveLogger';

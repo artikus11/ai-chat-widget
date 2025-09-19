@@ -1,10 +1,9 @@
-import { Utils } from '../utils';
-import { EVENTS, SCHEDULER_TYPES } from '../../config';
+import { EVENTS, SCHEDULER_TYPES } from '../config';
 import { DecisionEngine } from '@js/services/DecisionEngine';
-import { TipStorage } from '../../storages/TipStorage';
-import { UserActivityStorage } from '../../storages/UserActivityStorage';
-import { outerRules } from '../tips/rules';
-import { TipCooldown } from '../../services/TipCooldown';
+import { TipStorage } from '../storages/TipStorage';
+import { UserActivityStorage } from '../storages/UserActivityStorage';
+import { outerRules } from '../ui/tips/rules';
+import { TipCooldown } from './TipCooldown';
 import { TipPresenter } from '@js/services/TipPresenter';
 import { TipScheduler } from '@js/services/TipScheduler';
 import { UserActivityMonitor } from '@js/services/UserActivityMonitor';
@@ -72,7 +71,7 @@ export class OuterTips {
             this.logger
         );
 
-        this.scheduler = new TipScheduler(this.scheduler, eventEmitter, logger);
+        this.tipScheduler = new TipScheduler(this.scheduler, eventEmitter, logger);
 
         this.started = false;
 
@@ -178,7 +177,7 @@ export class OuterTips {
         this.started = true;
 
         const delay = this.messagesProvider.getField('out', 'welcome', 'delay');
-        this.scheduler.scheduleShow(delay, 'welcome');
+        this.tipScheduler.scheduleShow(delay, 'welcome');
     }
 
     /**
@@ -350,7 +349,7 @@ export class OuterTips {
             'duration'
         );
 
-        this.scheduler.scheduleAutoHide(duration);
+        this.tipScheduler.scheduleAutoHide(duration);
     }
 
     /**
@@ -361,7 +360,7 @@ export class OuterTips {
      * @returns {void}
      */
     scheduleFollowUpReminder() {
-        if (this.scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.FOLLOW_UP)) {
+        if (this.tipScheduler.hasScheduled(SCHEDULER_TYPES.OUTER.FOLLOW_UP)) {
             return;
         }
 
@@ -375,7 +374,7 @@ export class OuterTips {
             'delay'
         );
 
-        this.scheduler.scheduleFollowUp(delay);
+        this.tipScheduler.scheduleFollowUp(delay);
     }
 
     /**
@@ -394,7 +393,7 @@ export class OuterTips {
             500
         );
 
-        this.scheduler.scheduleActiveReturnCheck(delay);
+        this.tipScheduler.scheduleActiveReturnCheck(delay);
     }
 
     /**
@@ -416,7 +415,7 @@ export class OuterTips {
             'returning',
             'delay'
         );
-        this.scheduler.scheduleReturning(delay);
+        this.tipScheduler.scheduleReturning(delay);
     }
 
     /**

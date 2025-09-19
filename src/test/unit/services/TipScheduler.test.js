@@ -1,5 +1,5 @@
 // src/test/unit/services/TipScheduler.test.js
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TipScheduler } from '@js/services/TipScheduler';
 import { EVENTS, SCHEDULER_TYPES } from '@js/config';
 
@@ -14,197 +14,160 @@ const createLogger = () => ({
     error: vi.fn(),
 });
 
+const createMockScheduler = () => ({
+    schedule: vi.fn(),
+    cancel: vi.fn(),
+    clearAll: vi.fn(),
+    hasScheduled: vi.fn(),
+});
+
 describe('TipScheduler', () => {
     let scheduler;
+    let mockScheduler;
     let eventEmitter;
     let logger;
 
     beforeEach(() => {
         eventEmitter = createEventEmitter();
         logger = createLogger();
-        scheduler = new TipScheduler(eventEmitter, logger);
-
-        vi.useFakeTimers();
-    });
-
-    afterEach(() => {
-        vi.runOnlyPendingTimers();
-        vi.useRealTimers();
-        vi.clearAllMocks();
+        mockScheduler = createMockScheduler();
+        scheduler = new TipScheduler(mockScheduler, eventEmitter, logger);
     });
 
     describe('scheduleShow()', () => {
-        it('должен запланировать показ и эмитить OUTER_TIP_SCHEDULE_SHOW', () => {
+        it('делегирует в scheduler.schedule и вызывает emit при срабатывании', () => {
             const delay = 1000;
             const messageType = 'welcome';
 
             scheduler.scheduleShow(delay, messageType);
 
-            expect(logger.info).toHaveBeenCalledWith(
-                `[TipScheduler] Запланировано: ${EVENTS.UI.OUTER_TIP_SCHEDULE_SHOW} через ${delay}мс`
+            expect(mockScheduler.schedule).toHaveBeenCalledWith(
+                SCHEDULER_TYPES.OUTER.SHOW,
+                delay,
+                expect.any(Function)
             );
-            expect(scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.SHOW)).toBe(true);
 
-            vi.advanceTimersByTime(1000);
+            const cb = mockScheduler.schedule.mock.calls[0][2];
+            cb();
 
-            expect(eventEmitter.emit).toHaveBeenCalledWith(EVENTS.UI.OUTER_TIP_SCHEDULE_SHOW, {
-                type: messageType,
-            });
-            expect(logger.info).toHaveBeenCalledWith(`[TipScheduler] Триггер: ${EVENTS.UI.OUTER_TIP_SCHEDULE_SHOW}`);
-            expect(scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.SHOW)).toBe(false);
+            expect(logger.info).toHaveBeenCalledWith(
+                `[TipScheduler] Триггер: ${EVENTS.UI.OUTER_TIP_SCHEDULE_SHOW}`
+            );
+            expect(eventEmitter.emit).toHaveBeenCalledWith(
+                EVENTS.UI.OUTER_TIP_SCHEDULE_SHOW,
+                { type: messageType }
+            );
         });
     });
 
     describe('scheduleAutoHide()', () => {
-        it('должен эмитить OUTER_TIP_AUTO_HIDE после duration', () => {
+        it('делегирует в scheduler.schedule и вызывает emit при срабатывании', () => {
             const duration = 5000;
 
             scheduler.scheduleAutoHide(duration);
 
-            expect(logger.info).toHaveBeenCalledWith(
-                `[TipScheduler] Запланировано: ${EVENTS.UI.OUTER_TIP_AUTO_HIDE} через ${duration}мс`
+            expect(mockScheduler.schedule).toHaveBeenCalledWith(
+                SCHEDULER_TYPES.OUTER.AUTO_HIDE,
+                duration,
+                expect.any(Function)
             );
 
-            vi.advanceTimersByTime(4999);
-            expect(eventEmitter.emit).not.toHaveBeenCalledWith(EVENTS.UI.OUTER_TIP_AUTO_HIDE);
+            const cb = mockScheduler.schedule.mock.calls[0][2];
+            cb();
 
-            vi.advanceTimersByTime(1);
-            expect(eventEmitter.emit).toHaveBeenCalledWith(EVENTS.UI.OUTER_TIP_AUTO_HIDE, {});
-            expect(logger.info).toHaveBeenCalledWith(`[TipScheduler] Триггер: ${EVENTS.UI.OUTER_TIP_AUTO_HIDE}`);
+            expect(logger.info).toHaveBeenCalledWith(
+                `[TipScheduler] Триггер: ${EVENTS.UI.OUTER_TIP_AUTO_HIDE}`
+            );
+            expect(eventEmitter.emit).toHaveBeenCalledWith(EVENTS.UI.OUTER_TIP_AUTO_HIDE);
         });
     });
 
     describe('scheduleFollowUp()', () => {
-        it('должен запланировать follow-up напоминание', () => {
+        it('делегирует в scheduler.schedule и вызывает emit при срабатывании', () => {
             const delay = 30000;
 
             scheduler.scheduleFollowUp(delay);
 
-            expect(logger.info).toHaveBeenCalledWith(
-                `[TipScheduler] Запланировано: ${EVENTS.UI.OUTER_TIP_FOLLOW_UP_TRIGGER} через ${delay}мс`
+            expect(mockScheduler.schedule).toHaveBeenCalledWith(
+                SCHEDULER_TYPES.OUTER.FOLLOW_UP,
+                delay,
+                expect.any(Function)
             );
 
-            vi.advanceTimersByTime(30000);
+            const cb = mockScheduler.schedule.mock.calls[0][2];
+            cb();
 
-            expect(eventEmitter.emit).toHaveBeenCalledWith(EVENTS.UI.OUTER_TIP_FOLLOW_UP_TRIGGER, {});
+            expect(logger.info).toHaveBeenCalledWith(
+                `[TipScheduler] Триггер: ${EVENTS.UI.OUTER_TIP_FOLLOW_UP_TRIGGER}`
+            );
+            expect(eventEmitter.emit).toHaveBeenCalledWith(EVENTS.UI.OUTER_TIP_FOLLOW_UP_TRIGGER);
         });
     });
 
     describe('scheduleActiveReturnCheck()', () => {
-        it('должен запланировать проверку active_return', () => {
+        it('делегирует в scheduler.schedule и вызывает emit при срабатывании', () => {
             const delay = 500;
 
             scheduler.scheduleActiveReturnCheck(delay);
 
-            expect(logger.info).toHaveBeenCalledWith(
-                `[TipScheduler] Запланировано: ${EVENTS.UI.OUTER_TIP_ACTIVE_RETURN_TRIGGER} через ${delay}мс`
+            expect(mockScheduler.schedule).toHaveBeenCalledWith(
+                SCHEDULER_TYPES.OUTER.ACTIVE_RETURN,
+                delay,
+                expect.any(Function)
             );
 
-            vi.advanceTimersByTime(500);
+            const cb = mockScheduler.schedule.mock.calls[0][2];
+            cb();
 
-            expect(eventEmitter.emit).toHaveBeenCalledWith(EVENTS.UI.OUTER_TIP_ACTIVE_RETURN_TRIGGER, {});
+            expect(logger.info).toHaveBeenCalledWith(
+                `[TipScheduler] Триггер: ${EVENTS.UI.OUTER_TIP_ACTIVE_RETURN_TRIGGER}`
+            );
+            expect(eventEmitter.emit).toHaveBeenCalledWith(EVENTS.UI.OUTER_TIP_ACTIVE_RETURN_TRIGGER);
         });
     });
 
     describe('scheduleReturning()', () => {
-        it('должен запланировать returning-подсказку', () => {
+        it('делегирует в scheduler.schedule и вызывает emit при срабатывании', () => {
             const delay = 10000;
 
             scheduler.scheduleReturning(delay);
 
-            expect(logger.info).toHaveBeenCalledWith(
-                `[TipScheduler] Запланировано: ${EVENTS.UI.OUTER_TIP_RETURNING_TRIGGER} через ${delay}мс`
+            expect(mockScheduler.schedule).toHaveBeenCalledWith(
+                SCHEDULER_TYPES.OUTER.RETURNING,
+                delay,
+                expect.any(Function)
             );
 
-            vi.advanceTimersByTime(10000);
+            const cb = mockScheduler.schedule.mock.calls[0][2];
+            cb();
 
-            expect(eventEmitter.emit).toHaveBeenCalledWith(EVENTS.UI.OUTER_TIP_RETURNING_TRIGGER, {});
+            expect(logger.info).toHaveBeenCalledWith(
+                `[TipScheduler] Триггер: ${EVENTS.UI.OUTER_TIP_RETURNING_TRIGGER}`
+            );
+            expect(eventEmitter.emit).toHaveBeenCalledWith(EVENTS.UI.OUTER_TIP_RETURNING_TRIGGER);
         });
     });
 
     describe('cancel()', () => {
-        it('должен отменять конкретный таймер', () => {
-            const delay = 2000;
-
-            scheduler.scheduleShow(delay, 'welcome');
-            expect(scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.SHOW)).toBe(true);
-
+        it('делегирует вызов в scheduler.cancel', () => {
             scheduler.cancel(SCHEDULER_TYPES.OUTER.SHOW);
-
-            expect(logger.info).toHaveBeenCalledWith(
-                `[TipScheduler] Отменён таймер: ${SCHEDULER_TYPES.OUTER.SHOW}`
-            );
-            expect(scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.SHOW)).toBe(false);
-
-            // Проверим, что таймер не сработал
-            vi.advanceTimersByTime(2000);
-            expect(eventEmitter.emit).not.toHaveBeenCalledWith(EVENTS.UI.OUTER_TIP_SCHEDULE_SHOW);
+            expect(mockScheduler.cancel).toHaveBeenCalledWith(SCHEDULER_TYPES.OUTER.SHOW);
         });
     });
 
     describe('clearAll()', () => {
-        it('должен отменять все активные таймеры', () => {
-            scheduler.scheduleShow(1000, 'welcome');
-            scheduler.scheduleFollowUp(30000);
-            scheduler.scheduleAutoHide(8000);
-
-            expect(scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.SHOW)).toBe(true);
-            expect(scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.FOLLOW_UP)).toBe(true);
-            expect(scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.AUTO_HIDE)).toBe(true);
-
+        it('делегирует вызов в scheduler.clearAll', () => {
             scheduler.clearAll();
-
-            expect(logger.info).toHaveBeenCalledWith(
-                `[TipScheduler] Отменён таймер: ${SCHEDULER_TYPES.OUTER.SHOW}`
-            );
-            expect(logger.info).toHaveBeenCalledWith(
-                `[TipScheduler] Отменён таймер: ${SCHEDULER_TYPES.OUTER.FOLLOW_UP}`
-            );
-            expect(logger.info).toHaveBeenCalledWith(
-                `[TipScheduler] Отменён таймер: ${SCHEDULER_TYPES.OUTER.AUTO_HIDE}`
-            );
-
-            expect(scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.SHOW)).toBe(false);
-            expect(scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.FOLLOW_UP)).toBe(false);
-            expect(scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.AUTO_HIDE)).toBe(false);
-
-            vi.runAllTimers();
-            expect(eventEmitter.emit).not.toHaveBeenCalled();
+            expect(mockScheduler.clearAll).toHaveBeenCalled();
         });
     });
 
     describe('hasScheduled()', () => {
-        it('должен возвращать true, если таймер запланирован', () => {
-            scheduler.scheduleShow(1000, 'welcome');
-            expect(scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.SHOW)).toBe(true);
-
-            scheduler.cancel(SCHEDULER_TYPES.OUTER.SHOW);
-            expect(scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.SHOW)).toBe(false);
-        });
-    });
-
-    describe('защита от дублирования', () => {
-        it('должен отменять предыдущий таймер при повторном schedule', () => {
-            const firstDelay = 1000;
-            const secondDelay = 500;
-
-            scheduler.scheduleShow(firstDelay, 'welcome');
-            expect(scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.SHOW)).toBe(true);
-
-            scheduler.scheduleShow(secondDelay, 'welcome');
-
-            expect(logger.info).toHaveBeenCalledWith(
-                `[TipScheduler] Отменён таймер: ${SCHEDULER_TYPES.OUTER.SHOW}`
-            );
-            expect(scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.SHOW)).toBe(true);
-
-            vi.advanceTimersByTime(499);
-            expect(eventEmitter.emit).not.toHaveBeenCalled();
-
-            vi.advanceTimersByTime(1);
-            expect(eventEmitter.emit).toHaveBeenCalledWith(EVENTS.UI.OUTER_TIP_SCHEDULE_SHOW, {
-                type: 'welcome',
-            });
+        it('делегирует вызов в scheduler.hasScheduled', () => {
+            mockScheduler.hasScheduled.mockReturnValue(true);
+            const result = scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.SHOW);
+            expect(result).toBe(true);
+            expect(mockScheduler.hasScheduled).toHaveBeenCalledWith(SCHEDULER_TYPES.OUTER.SHOW);
         });
     });
 });

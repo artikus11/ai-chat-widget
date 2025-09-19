@@ -5,7 +5,7 @@ import { FormHandler } from './components/FormHandler';
 import { StateManager } from './components/StateManager';
 import { TypingIndicator } from './features/TypingIndicator';
 import { InnerTips } from './features/InnerTips';
-import { OuterTips } from './features/OuterTips';
+import { OuterTips } from '../services/OuterTips';
 
 /**
  * Основной класс пользовательского интерфейса чата.

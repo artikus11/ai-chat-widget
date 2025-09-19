@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TipStorage } from '@js/storages/TipStorage';
-import StorageKeysProvider from '@js/providers/StorageKeyProvider';
+import StorageKeysProvider from '@js/providers/StorageKeysProvider';
 import { createMockStorage } from '@test/mocks/storageMocks';
 
 describe('TipStorage', () => {

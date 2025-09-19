@@ -13,7 +13,7 @@ export const EXTERNAL_EVENTS_MAP = {
     [EVENTS.UI.CHAT_OPEN]: withPrefix('open', '.'),
     [EVENTS.UI.CHAT_CLOSE]: withPrefix('close', '.'),
     [EVENTS.UI.MESSAGE_SENT]: withPrefix('message_sent', '.'),
-    [EVENTS.UI.WOUTER_TIP_SHOW]: withPrefix('outer_tip_show', '.'),
+    [EVENTS.UI.OUTER_TIP_SHOW]: withPrefix('outer_tip_show', '.'),
     [EVENTS.UI.OUTER_TIP_HIDE]: withPrefix('outer_tip_hide', '.'),
     [EVENTS.API.REQUEST_START]: withPrefix('request_start', '.'),
     [EVENTS.API.REQUEST_DONE]: withPrefix('request_done', '.'),

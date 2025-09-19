@@ -3,7 +3,7 @@ import { TipCooldown } from '@js/services/TipCooldown';
 import { TipStorage } from '@js/storages/TipStorage';
 import { createMessagesProviderMock, mockMessagesWithCooldown } from '@test/mocks/messagesProviderMock';
 import { createMockStorage } from '@test/mocks/storageMocks';
-import StorageKeysProvider from '@js/providers/StorageKeyProvider';
+import StorageKeysProvider from '@js/providers/StorageKeysProvider';
 import { createMockLogger } from '@test/mocks/loggerMock';
 
 describe('TipCooldown', () => {

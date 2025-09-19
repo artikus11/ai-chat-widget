@@ -130,6 +130,6 @@ export class TipScheduler {
      * }
      */
     hasScheduled(type) {
-        this.scheduler.hasScheduled(type);
+        return this.scheduler.hasScheduled(type);
     }
 }

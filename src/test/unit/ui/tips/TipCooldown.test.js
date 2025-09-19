@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TipCooldown } from '@js/ui/tips/TipCooldown';
-import { TipStorage } from '@js/ui/tips/TipStorage';
+import { TipCooldown } from '@js/services/TipCooldown';
+import { TipStorage } from '@js/storages/TipStorage';
 import { createMessagesProviderMock, mockMessagesWithCooldown } from '@test/mocks/messagesProviderMock';
 import { createMockStorage } from '@test/mocks/storageMocks';
 import StorageKeysProvider from '@js/providers/StorageKeyProvider';

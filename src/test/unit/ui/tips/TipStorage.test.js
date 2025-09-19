@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TipStorage } from '@js/ui/tips/TipStorage';
+import { TipStorage } from '@js/storages/TipStorage';
 import StorageKeysProvider from '@js/providers/StorageKeyProvider';
 import { createMockStorage } from '@test/mocks/storageMocks';
 

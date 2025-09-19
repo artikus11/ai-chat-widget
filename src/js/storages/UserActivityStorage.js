@@ -4,7 +4,7 @@ export class UserActivityStorage {
      * @param {Storage} storage - Объект хранилища (по умолчанию localStorage).
      * @param {Object} logger - Логгер для вывода предупреждений и ошибок.
      */
-    constructor(keysProvider, storage = localStorage, logger) {
+    constructor(keysProvider, logger, storage = localStorage) {
         this.storage = storage;
         this.keysProvider = keysProvider;
         this.logger = logger;
@@ -17,6 +17,19 @@ export class UserActivityStorage {
      */
     markChatOpen() {
         const key = this.keysProvider.get('CHAT', 'CHAT_OPEN');
+
+        if (key) {
+            this.storage.setItem(key, Date.now().toString());
+        }
+    }
+
+    /**
+     * Отмечает, что чат был закрыт, сохраняя текущую временную метку.
+     * Получает ключ хранилища с помощью keysProvider для 'CHAT' и 'CHAT_CLOSE'.
+     * Если ключ существует, сохраняет текущее время (в миллисекундах) как строку в хранилище.
+     */
+    markChatClose() {
+        const key = this.keysProvider.get('CHAT', 'CHAT_CLOSE');
 
         if (key) {
             this.storage.setItem(key, Date.now().toString());
@@ -65,7 +78,7 @@ export class UserActivityStorage {
      * @returns {number|null} Временная метка (в миллисекундах) последнего отправленного сообщения или null, если недоступно.
      */
     getLastMessageSentTime() {
-        const key = this.keysProvider.get('CHAT', 'CHAT_OPEN');
+        const key = this.keysProvider.get('CHAT', 'LAST_MESSAGE_SENT');
         if (!key) {
             return null;
         }

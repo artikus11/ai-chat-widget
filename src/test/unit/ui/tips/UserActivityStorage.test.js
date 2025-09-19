@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { beforeAll, afterAll } from 'vitest';
-import { UserActivityStorage } from '@js/ui/tips/UserActivityStorage';
+import { UserActivityStorage } from '@js/storages/UserActivityStorage';
 import { createMockStorage, createMockKeysProvider } from '@test/mocks/storageMocks';
 
 describe('UserActivityStorage > Unit', () => {

@@ -8,6 +8,7 @@ import { TipCooldown } from '../../services/TipCooldown';
 import { TipPresenter } from '@js/services/TipPresenter';
 import { TipScheduler } from '@js/services/TipScheduler';
 import { UserActivityMonitor } from '@js/services/UserActivityMonitor';
+import { Scheduler } from '@js/services/Scheduler';
 
 /**
  * Умный обработчик внешних подсказок (всплывающих сообщений под кнопкой чата).
@@ -44,14 +45,15 @@ export class OuterTips {
         this.eventEmitter = eventEmitter;
         this.logger = logger;
 
-        this.presenter = new TipPresenter(ui, logger);
+        this.scheduler = new Scheduler(this.logger);
+        this.presenter = new TipPresenter(this.ui, this.logger);
         this.tipStorage = new TipStorage(this.keysProvider);
         this.userActivityStorage = new UserActivityStorage(this.keysProvider);
 
         this.userActivityMonitor = new UserActivityMonitor(
             eventEmitter,
             this.userActivityStorage,
-            logger
+            this.logger
         );
 
         this.tipCooldown = new TipCooldown(
@@ -70,7 +72,7 @@ export class OuterTips {
             this.logger
         );
 
-        this.scheduler = new TipScheduler(eventEmitter, logger);
+        this.scheduler = new TipScheduler(this.scheduler, eventEmitter, logger);
 
         this.started = false;
 
@@ -120,6 +122,18 @@ export class OuterTips {
                 this.presenter.canRender()
             ) {
                 this.showMessageByType('followup');
+            }
+        });
+
+        this.eventEmitter.on(EVENTS.UI.OUTER_TIP_RETURNING_TRIGGER, () => {
+            const state = this.getCurrentState();
+
+            if (
+                state.isRecentlyReturned &&
+                !this.presenter.isShown &&
+                this.presenter.canRender()
+            ) {
+                this.showMessageByType('returning');
             }
         });
     }

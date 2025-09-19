@@ -29,8 +29,9 @@ export const MESSAGES = {
         welcome: {
             // 1. Впервые видит → через 3 сек
             text: 'Готов помочь! Нажмите, чтобы начать чат',
-            delay: 1000,
+            delay: 10000,
             duration: 8000,
+            //cooldownHours: 24,
             disable: false,
         },
         followup: {
@@ -38,6 +39,7 @@ export const MESSAGES = {
             text: 'Остались вопросы по товарам? Спрашивайте — подскажу, покажу, помогу выбрать.',
             delay: 30000,
             duration: 10000,
+            cooldownHours: 6,
             disable: false,
         },
         returning: {
@@ -45,6 +47,7 @@ export const MESSAGES = {
             text: 'Вы в чате — могу помочь с выбором товара, размером или доставкой. Просто спросите!',
             delay: 10000,
             duration: 10000,
+            cooldownHours: 6,
             disable: false,
         },
         reconnect: {
@@ -52,6 +55,7 @@ export const MESSAGES = {
             text: 'Рад снова вас видеть! Давайте найдём то, что нужно — я помню ваш вкус.',
             delay: 8000,
             duration: 10000,
+            cooldownHours: 24,
             disable: false,
         },
         active_return: {
@@ -59,6 +63,7 @@ export const MESSAGES = {
             text: 'Хотите продолжить подбор? У меня есть пара интересных вариантов для вас.',
             delay: 5000,
             duration: 7000,
+            cooldownHours: 24,
             disable: false,
         },
     },

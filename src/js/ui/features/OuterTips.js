@@ -1,12 +1,13 @@
 import { Utils } from '../utils';
 import { EVENTS, SCHEDULER_TYPES } from '../../config';
 import { DecisionEngine } from '@js/services/DecisionEngine';
-import { TipStorage } from '../tips/TipStorage';
-import { UserActivityStorage } from '../tips/UserActivityStorage';
+import { TipStorage } from '../../storages/TipStorage';
+import { UserActivityStorage } from '../../storages/UserActivityStorage';
 import { outerRules } from '../tips/rules';
-import { TipCooldown } from '../tips/TipCooldown';
+import { TipCooldown } from '../../services/TipCooldown';
 import { TipPresenter } from '@js/services/TipPresenter';
 import { TipScheduler } from '@js/services/TipScheduler';
+import { UserActivityMonitor } from '@js/services/UserActivityMonitor';
 
 /**
  * Умный обработчик внешних подсказок (всплывающих сообщений под кнопкой чата).
@@ -23,44 +24,6 @@ import { TipScheduler } from '@js/services/TipScheduler';
  * @class OuterTips
  */
 export class OuterTips {
-    // /**
-    //  * Стандартные длительности показа сообщений (в миллисекундах), если не заданы в провайдере.
-    //  *
-    //  * @type {Object.<string, number>}
-    //  * @property {number} welcome - 8 секунд
-    //  * @property {number} followup - 10 секунд
-    //  * @property {number} reconnect - 10 секунд
-    //  * @property {number} active_return - 7 секунд
-    //  * @property {number} returning - 10 секунд
-    //  * @readonly
-    //  */
-    // static DEFAULT_DURATIONS = {
-    //     welcome: 8000,
-    //     followup: 10000,
-    //     reconnect: 10000,
-    //     active_return: 7000,
-    //     returning: 10000,
-    // };
-
-    // /**
-    //  * Стандартные задержки перед показом сообщений (в миллисекундах), если не заданы в провайдере.
-    //  *
-    //  * @type {Object.<string, number>}
-    //  * @property {number} welcome - 3 секунды
-    //  * @property {number} followup - 30 секунд
-    //  * @property {number} reconnect - 8 секунд
-    //  * @property {number} active_return - 5 секунд
-    //  * @property {number} returning - 10 секунд
-    //  * @readonly
-    //  */
-    // static DEFAULT_DELAY = {
-    //     welcome: 3000,
-    //     followup: 30000,
-    //     reconnect: 8000,
-    //     active_return: 5000,
-    //     returning: 10000,
-    // };
-
     /**
      * Создаёт экземпляр компонента управления внешними подсказками.
      *
@@ -74,13 +37,7 @@ export class OuterTips {
      *
      */
     constructor(ui, messagesProvider, keysProvider, eventEmitter, logger) {
-        // const { elements, classes } = ui;
-
         this.ui = ui;
-
-        // this.toggleButton = elements.toggle;
-        // this.tipElement = elements.welcomeTip;
-        // this.tipClassShow = classes.welcomeTipShow;
 
         this.messagesProvider = messagesProvider;
         this.keysProvider = keysProvider;
@@ -88,9 +45,14 @@ export class OuterTips {
         this.logger = logger;
 
         this.presenter = new TipPresenter(ui, logger);
-
         this.tipStorage = new TipStorage(this.keysProvider);
         this.userActivityStorage = new UserActivityStorage(this.keysProvider);
+
+        this.userActivityMonitor = new UserActivityMonitor(
+            eventEmitter,
+            this.userActivityStorage,
+            logger
+        );
 
         this.tipCooldown = new TipCooldown(
             this.messagesProvider,
@@ -111,16 +73,11 @@ export class OuterTips {
         this.scheduler = new TipScheduler(eventEmitter, logger);
 
         this.started = false;
-        // this.isShown = false;
-        // this.animation = null;
-        // this.showTimeout = null;
-        // this.hideTimeout = null;
-        // this.followUpTimeout = null;
 
         this.#bindSchedulerEvents();
+        this.#bindUserActivityEvents();
 
-        this.bindEvents();
-        this.listenForUserActivity();
+        this.userActivityMonitor.start();
     }
     /**
      * Подписывается на события от TipScheduler.
@@ -167,6 +124,27 @@ export class OuterTips {
         });
     }
 
+    #bindUserActivityEvents() {
+        this.eventEmitter.on(EVENTS.UI.CHAT_OPEN, () => {
+            this.markChatAsOpened();
+        });
+
+        this.eventEmitter.on(EVENTS.UI.CHAT_CLOSE, () => {
+            this.handleChatClose();
+        });
+
+        this.eventEmitter.on(EVENTS.UI.MESSAGE_SENT, () => {
+            this.markUserAsActive();
+            if (this.presenter.isShown) {
+                this.hideMessage();
+            }
+        });
+
+        this.eventEmitter.on(EVENTS.UI.PAGE_RETURN, () => {
+            this.scheduleActiveReturn();
+        });
+    }
+
     /**
      * Запускает логику показа подсказки.
      *
@@ -186,7 +164,7 @@ export class OuterTips {
         this.started = true;
 
         const delay = this.messagesProvider.getField('out', 'welcome', 'delay');
-        this.scheduler.scheduleShow('welcome', delay);
+        this.scheduler.scheduleShow(delay, 'welcome');
     }
 
     /**
@@ -199,9 +177,10 @@ export class OuterTips {
     getCurrentState() {
         const now = Date.now();
 
-        const lastChatOpenTime = this.getLastChatOpenTime();
+        const lastChatOpenTime = this.userActivityMonitor.getLastChatOpenTime();
         const lastMessageSentTime =
-            this.userActivityStorage.getLastMessageSentTime();
+            this.userActivityMonitor.getLastMessageSentTime();
+
         const hasSentMessage = lastMessageSentTime !== null;
 
         const timeSinceLastOpen =
@@ -236,24 +215,12 @@ export class OuterTips {
         };
     }
 
-    /**
-     * Получает временную метку последнего открытия чата из localStorage.
-     *
-     * @returns {number|null} Timestamp или `null`, если не открывался
-     */
     getLastChatOpenTime() {
-        const raw = this.userActivityStorage.getLastChatOpenTime();
-
-        return raw ? parseInt(raw, 10) : null;
+        return this.userActivityMonitor.getLastChatOpenTime();
     }
 
-    /**
-     * Проверяет, отправлял ли пользователь сообщение ранее.
-     *
-     * @returns {boolean} `true`, если сообщение было отправлено
-     */
     hasUserSentMessage() {
-        return this.userActivityStorage.hasSentMessage();
+        return this.userActivityMonitor.hasSentMessage();
     }
 
     /**
@@ -275,7 +242,6 @@ export class OuterTips {
         }
 
         this.presenter.show(text, () => {
-            // Анимация завершена
             this.eventEmitter.emit(EVENTS.UI.OUTER_TIP_SHOW, { type });
         });
 
@@ -317,85 +283,8 @@ export class OuterTips {
      * @emits EVENTS.UI.OUTER_TIP_HIDE
      */
     hideMessage() {
-        // if (!this.isShown) {
-        //     return;
-        // }
-
-        // if (this.animation?.stop) {
-        //     this.animation.stop();
-        // }
-        // this.animation = null;
-
-        // this.tipElement.classList.remove(this.tipClassShow);
-        // this.isShown = false;
-
-        // clearTimeout(this.hideTimeout);
-
-        // this.unbindEvents();
-
-        // this.eventEmitter.emit(EVENTS.UI.OUTER_TIP_HIDE);
-
         this.presenter.hide();
         this.eventEmitter.emit(EVENTS.UI.OUTER_TIP_HIDE);
-    }
-
-    /**
-     * Назначает обработчики DOM-событий.
-     *
-     * @private
-     * @returns {void}
-     */
-    bindEvents() {
-        // this._hideHandler = () => this.hide();
-        // this.toggleButton.addEventListener('click', this._hideHandler);
-    }
-
-    /**
-     * Удаляет обработчики DOM-событий.
-     *
-     * @private
-     * @returns {void}
-     */
-    unbindEvents() {
-        // if (this._hideHandler) {
-        //     this.toggleButton.removeEventListener('click', this._hideHandler);
-        //     this._hideHandler = null;
-        // }
-    }
-
-    /**
-     * Подписывается на внутренние события приложения (через EventEmitter).
-     *
-     * @private
-     * @returns {void}
-     */
-    listenForUserActivity() {
-        this.eventEmitter.on(EVENTS.UI.CHAT_OPEN, () => {
-            this.markChatAsOpened();
-        });
-
-        this.eventEmitter.on(EVENTS.UI.CHAT_CLOSE, () => {
-            this.handleChatClose();
-        });
-
-        this.eventEmitter.on(EVENTS.UI.MESSAGE_SENT, () => {
-            this.markUserAsActive();
-            if (this.isShown) {
-                this.hideMessage();
-            }
-        });
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                // Пользователь вернулся на страницу
-                this.scheduleActiveReturn();
-            }
-        });
-
-        // Или дополнительно:
-        window.addEventListener('focus', () => {
-            this.scheduleActiveReturn();
-        });
     }
 
     /**
@@ -404,7 +293,7 @@ export class OuterTips {
      * @returns {void}
      */
     markChatAsOpened() {
-        this.userActivityStorage.markChatOpen();
+        this.userActivityMonitor.markChatOpen();
     }
 
     /**
@@ -414,15 +303,7 @@ export class OuterTips {
      * @returns {void}
      */
     markUserAsActive() {
-        try {
-            this.userActivityStorage.markMessageSent();
-            this.markChatAsOpened();
-        } catch (e) {
-            this.logger.warn(
-                '[WelcomeTip] Не удалось сохранить активность:',
-                e
-            );
-        }
+        this.userActivityMonitor.markMessageSent();
     }
 
     /**
@@ -440,19 +321,6 @@ export class OuterTips {
                 e
             );
         }
-    }
-
-    /**
-     * Проверяет, можно ли рендерить подсказку (элементы существуют и в DOM).
-     *
-     * @returns {boolean} `true`, если элементы доступны и видимы
-     */
-    canRender() {
-        return !!(
-            this.toggleButton &&
-            this.tipElement &&
-            document.body.contains(this.toggleButton)
-        );
     }
 
     /**
@@ -479,32 +347,6 @@ export class OuterTips {
      * @returns {void}
      */
     scheduleFollowUpReminder() {
-        // if (this.followUpTimeout) {
-        //     return;
-        // }
-
-        // if (this.getLastChatOpenTime()) {
-        //     return;
-        // }
-
-        // const initialDelay = this.messagesProvider.getField(
-        //     'out',
-        //     'followup',
-        //     'delay',
-        //     30000
-        // );
-
-        // this.followUpTimeout = setTimeout(() => {
-        //     if (
-        //         this.isShown ||
-        //         this.getLastChatOpenTime() ||
-        //         !this.canRender()
-        //     ) {
-        //         return;
-        //     }
-        //     this.showMessageByType('followup');
-        // }, initialDelay);
-
         if (this.scheduler.hasScheduled(SCHEDULER_TYPES.OUTER.FOLLOW_UP)) {
             return;
         }
@@ -520,17 +362,6 @@ export class OuterTips {
         );
 
         this.scheduler.scheduleFollowUp(delay);
-
-        // const delay = this.messagesProvider.getField(
-        //     'out',
-        //     'followup',
-        //     'delay',
-        //     30000
-        // );
-        // this.scheduler.scheduleFollowUp(
-        //     delay,
-        //     () => !!this.getLastChatOpenTime()
-        // );
     }
 
     /**
@@ -542,49 +373,13 @@ export class OuterTips {
      * @returns {void}
      */
     scheduleActiveReturn() {
-        // Задержка на случай, если это просто переключение между вкладками
-        setTimeout(() => {
-            const state = this.getCurrentState();
-
-            // Только если он уже писал
-            if (!state.hasSentMessage) {
-                return;
-            }
-
-            // Не показывать, если чат уже открыт
-            if (this.ui.isOpen()) {
-                // нужно реализовать
-                return;
-            }
-
-            // Не показывать, если уже показывали
-            if (this.tipStorage.wasShown('active_return', 'out')) {
-                return;
-            }
-
-            // Можно показать?
-            if (!this.canRender() || this.isShown) {
-                return;
-            }
-
-            // Проверим через decisionEngine
-            const messageType = this.decisionEngine.determine(state, {
-                context: 'return', // опционально: подсказка движку
-            });
-
-            if (messageType === 'active_return') {
-                this.showMessageByType('active_return');
-            }
-        }, 500); // небольшая задержка, чтобы избежать ложных срабатываний
-    }
-
-    scheduleActiveReturn() {
         const delay = this.messagesProvider.getField(
             'out',
             'active_return',
             'delay',
             500
         );
+
         this.scheduler.scheduleActiveReturnCheck(delay);
     }
 
@@ -598,7 +393,7 @@ export class OuterTips {
             return;
         }
 
-        if (this.isShown) {
+        if (this.presenter.isShown) {
             return;
         }
 

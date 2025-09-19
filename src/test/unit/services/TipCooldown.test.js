@@ -83,10 +83,8 @@ describe('TipCooldown', () => {
             });
             const cd = new TipCooldown(provider, tipStorage, logger);
 
-            // Поскольку DEFAULT_COOLDOWN_HOURS[greeting] === undefined,
-            // getField вернёт undefined → и использует defaultValue (undefined), но это редкий случай.
-            // Лучше проверить логику с явным типом, который есть в DEFAULT_COOLDOWN_HOURS
-            expect(cd.getCooldownHours('followup', 'in')).toBe(6); // followup есть в DEFAULT_COOLDOWN_HOURS
+
+            expect(cd.getCooldownHours('followup', 'in')).toBe(24);
         });
     });
 

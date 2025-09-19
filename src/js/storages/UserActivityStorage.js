@@ -4,7 +4,7 @@ export class UserActivityStorage {
      * @param {Storage} storage - Объект хранилища (по умолчанию localStorage).
      * @param {Object} logger - Логгер для вывода предупреждений и ошибок.
      */
-    constructor(keysProvider, logger, storage = localStorage) {
+    constructor(keysProvider, storage = localStorage, logger) {
         this.storage = storage;
         this.keysProvider = keysProvider;
         this.logger = logger;

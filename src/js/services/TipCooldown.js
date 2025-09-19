@@ -1,28 +1,12 @@
 /**
- * @fileoverview Класс для управления кулдаунами (временными интервалами между показами)
+ * Класс для управления кулдаунами (временными интервалами между показами)
  * для различных типов сообщений (tips).
+ * 
+ * Используется для предотвращения слишком частого показа одних и тех же сообщений.
+ * 
+ * @class TipCooldown
  */
 export class TipCooldown {
-    /**
-     * Стандартные значения кулдаунов (в часах) для каждого типа сообщения,
-     * если не переопределены в `messagesProvider`.
-     *
-     * @type {Object.<string, number>}
-     * @property {number} welcome - 24 часа
-     * @property {number} followup - 6 часов
-     * @property {number} returning - 6 часов
-     * @property {number} reconnect - 24 часа
-     * @property {number} active_return - 24 часа
-     * @readonly
-     */
-    static DEFAULT_COOLDOWN_HOURS = {
-        welcome: 24,
-        followup: 6,
-        returning: 6,
-        reconnect: 24,
-        active_return: 24,
-    };
-
     /**
      * Создаёт новый экземпляр кулдауна.
      * @param {MessagesProvider} messagesProvider - Провайдер сообщений, содержащий тексты и настройки.
@@ -40,6 +24,7 @@ export class TipCooldown {
     /**
      * Получает значение кулдауна (в часах) для указанного типа сообщения.
      * Если в провайдере сообщений не задано, возвращает значение по умолчанию.
+     * По умолчанию: 24 часа
      * @param {string} type - Тип сообщения (например, 'welcome', 'followup').
      * @param {string} [category='out'] - Категория сообщения ('in' или 'out').
      * @returns {number} Кулдаун в часах.
@@ -52,7 +37,7 @@ export class TipCooldown {
             category,
             type,
             'cooldownHours',
-            TipCooldown.DEFAULT_COOLDOWN_HOURS[type]
+            24
         );
     }
 

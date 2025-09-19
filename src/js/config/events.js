@@ -15,6 +15,8 @@ import withPrefix from '../utils/withPrefix';
  */
 export const EVENTS = {
     UI: {
+        PAGE_RETURN: withPrefix('ui:page:return'),
+
         CHAT_OPEN: withPrefix('ui:chat:open'),
         CHAT_CLOSE: withPrefix('ui:chat:close'),
 

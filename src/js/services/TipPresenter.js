@@ -37,22 +37,15 @@ export class TipPresenter {
      * @returns {void}
      */
     bindEvents() {
-        console.log('🔧 [bindEvents] this.toggleButton:', this.toggleButton);
         if (!this.toggleButton) {
-            console.warn('⚠️ Не найден toggleButton — обработчик НЕ назначен');
             return;
         }
 
         this._hideHandler = () => {
-            console.log('🖱️ [handler] Вызов this.hide()', this.hide.name);
             this.hide();
         };
 
         this.toggleButton.addEventListener('click', this._hideHandler);
-        console.log(
-            '✅ [bind] addEventListener с функцией:',
-            this._hideHandler
-        );
     }
 
     /**
@@ -62,14 +55,10 @@ export class TipPresenter {
      * @returns {void}
      */
     unbindEvents() {
-        console.log(
-            '🔧 [unbind] Пытаюсь удалить обработчик:',
-            this._hideHandler
-        );
         if (this._hideHandler && this.toggleButton) {
             const handler = this._hideHandler;
             this.toggleButton.removeEventListener('click', handler);
-            console.log('🗑️ [unbind] removeEventListener вызван с:', handler);
+
             this._hideHandler = null;
         }
     }

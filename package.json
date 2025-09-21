@@ -1,6 +1,6 @@
 {
     "name": "@artikus13/ai-chat-widget",
-    "version": "2.1.0",
+    "version": "2.1.2",
     "description": "AI chat widget for websites, works with WordPress",
     "main": "dist/chat.js",
     "module": "dist/chat.es.js",
@@ -22,7 +22,8 @@
         "build:es": "cross-env BUILD_FORMAT=es vite build",
         "build:umd": "cross-env BUILD_FORMAT=umd vite build",
         "preview": "vite preview",
-        "publish": "npm run build && npm publish --access public",
+        "prepublishOnly": "npm run build",
+        "publish": "npm publish --access public",
         "lint": "eslint ./src/js --ext .js",
         "lint:fix": "eslint ./src/js --ext .js --fix",
         "format": "prettier --write \"src/js/**/*.js\"",

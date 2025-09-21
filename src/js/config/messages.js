@@ -31,7 +31,7 @@ export const MESSAGES = {
             text: 'Готов помочь! Нажмите, чтобы начать чат',
             delay: 10000,
             duration: 8000,
-            //cooldownHours: 24,
+            cooldownHours: 24,
             disable: false,
         },
         followup: {

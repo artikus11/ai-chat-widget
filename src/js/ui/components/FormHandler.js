@@ -1,5 +1,6 @@
 import { Utils } from '../utils';
 import { EVENTS } from '../../config';
+import { KeyboardScrollBlocker } from '../utils/KeyboardScrollBlocker';
 
 /**
  * Класс для управления поведением формы ввода сообщения.
@@ -55,7 +56,11 @@ export class FormHandler {
 
         this.bindResizeHandlers();
     }
-
+    blockScroll = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    };
     /**
      * Назначает обработчики событий для формы: отправка, ввод текста, отправка по Enter.
      *
@@ -155,17 +160,66 @@ export class FormHandler {
             window.addEventListener('resize', updateHeightIfOpen, { signal });
         }
 
-        this.textarea?.addEventListener(
-            'focus',
-            () => {
-                setTimeout(() => {
-                    Utils.updateChatHeight(this.elements);
-                }, 100);
-            },
-            { signal }
-        );
+        // this.textarea?.addEventListener(
+        //     'focus',
+        //     () => {
+        //         setTimeout(() => {
+        //             Utils.updateChatHeight(this.elements);
+        //         }, 100);
+        //     },
+        //     { signal }
+        // );
 
-        this.textarea?.addEventListener('blur', () => {}, { signal });
+        // this.textarea?.addEventListener('blur', () => { }, { signal });
+
+        // this.textarea?.addEventListener('focus', () => {
+        //     const scrollY = window.scrollY;
+
+        //     // 1. Фиксируем body
+        //     document.body.style.position = 'fixed';
+        //     document.body.style.width = '100%';
+        //     document.body.style.top = `-${scrollY}px`;
+        //     document.body.style.overflow = 'hidden';
+
+        //     // 2. Добавляем дополнительные слушатели (для Safari/Firefox)
+        //     document.addEventListener('touchmove', this.blockScroll, { passive: false });
+        //     document.addEventListener('scroll', this.blockScroll, { passive: false });
+
+        //     // 3. Обновляем высоту чата
+        //     setTimeout(() => {
+        //         Utils.updateChatHeight(this.elements);
+        //     }, 100);
+
+        //     // Сохраняем для удаления
+        //     this._unblockScroll = () => {
+        //         document.body.style.position = '';
+        //         document.body.style.width = '';
+        //         document.body.style.top = '';
+        //         document.body.style.overflow = '';
+
+        //         window.scrollTo(0, scrollY);
+
+        //         document.removeEventListener('touchmove', this.blockScroll);
+        //         document.removeEventListener('scroll', this.blockScroll);
+        //         this._unblockScroll = null;
+        //     };
+        // }, { signal });
+
+        // this.textarea?.addEventListener('blur', () => {
+        //     if (this._unblockScroll) {
+        //         this._unblockScroll();
+        //     }
+        // }, { signal });
+
+        new KeyboardScrollBlocker(
+            this.textarea,
+            () => {
+                if (this.ui.isOpen()) {
+                    Utils.updateChatHeight(this.elements);
+                }
+            },
+            { signal, mobileBreakpoint: 768 }
+        );
     }
 
     /**

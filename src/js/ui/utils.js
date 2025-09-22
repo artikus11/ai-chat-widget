@@ -325,4 +325,24 @@ export class Utils {
         const jitter = Math.random() * (2 * variation) - variation;
         return speed + jitter;
     }
+
+    /**
+     * Определяет, является ли устройство мобильным.
+     *
+     * @param {number} [breakpoint=768] - Ширина экрана (в px), ниже которой считать устройство мобильным.
+     * @returns {boolean}
+     *
+     * @example
+     * if (Utils.isMobile()) { ... }
+     * if (Utils.isMobile(1024)) { ... } // включая планшеты
+     * @static
+     */
+    static isMobile(breakpoint = 768) {
+        return (
+            window.innerWidth <= breakpoint ||
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                navigator.userAgent
+            )
+        );
+    }
 }

@@ -136,6 +136,9 @@ $spacing: 16px;
         flex-direction: column;
         gap: 12px;
         background: #f9f9f9;
+        touch-action: pan-y;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     &__message {

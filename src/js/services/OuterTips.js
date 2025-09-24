@@ -71,7 +71,11 @@ export class OuterTips {
             this.logger
         );
 
-        this.tipScheduler = new TipScheduler(this.scheduler, eventEmitter, logger);
+        this.tipScheduler = new TipScheduler(
+            this.scheduler,
+            eventEmitter,
+            logger
+        );
 
         this.started = false;
 

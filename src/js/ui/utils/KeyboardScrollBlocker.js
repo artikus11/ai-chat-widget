@@ -1,4 +1,4 @@
-import { Utils } from "../utils";
+import { Utils } from '../utils';
 /**
  * Управляет блокировкой скролла страницы при открытии виртуальной клавиатуры на мобильных.
  * Применяется только на мобильных устройствах, чтобы избежать "пляски" ширины на десктопе.
@@ -15,7 +15,11 @@ export class KeyboardScrollBlocker {
      * @param {number} options.mobileBreakpoint - Ширина экрана, ниже которой считаем устройство мобильным.
      * @param {AbortSignal} options.signal - Сигнал от AbortController для отписки.
      */
-    constructor(textarea, onHeightUpdate, { mobileBreakpoint = 768, signal } = {}) {
+    constructor(
+        textarea,
+        onHeightUpdate,
+        { mobileBreakpoint = 768, signal } = {}
+    ) {
         this.textarea = textarea;
         this.onHeightUpdate = onHeightUpdate;
         this.mobileBreakpoint = mobileBreakpoint;
@@ -26,8 +30,6 @@ export class KeyboardScrollBlocker {
 
         this.#initialize();
     }
-
-
 
     /**
      * Обработчик, блокирующий события прокрутки.
@@ -52,8 +54,12 @@ export class KeyboardScrollBlocker {
         document.body.style.overflow = 'hidden';
 
         // Блокируем touchmove и scroll
-        document.addEventListener('touchmove', this.#blockScroll, { passive: false });
-        document.addEventListener('scroll', this.#blockScroll, { passive: false });
+        document.addEventListener('touchmove', this.#blockScroll, {
+            passive: false,
+        });
+        document.addEventListener('scroll', this.#blockScroll, {
+            passive: false,
+        });
 
         // Сохраняем функцию для снятия блокировки
         this._unblock = () => {
@@ -107,7 +113,9 @@ export class KeyboardScrollBlocker {
             this.#unblockPageScroll();
         };
 
-        this.textarea.addEventListener('focus', onFocus, { signal: this.signal });
+        this.textarea.addEventListener('focus', onFocus, {
+            signal: this.signal,
+        });
         this.textarea.addEventListener('blur', onBlur, { signal: this.signal });
     }
 }

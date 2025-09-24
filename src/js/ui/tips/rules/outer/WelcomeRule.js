@@ -22,39 +22,32 @@ export const WelcomeRule = {
      * @returns {string|null} Тип сообщения для показа ('welcome') или `null`, если условия не выполнены.
      */
     matches(state, engine, context) {
-        // 1. Достаём нужные данные из state и engine
         const { lastChatOpenTime, hasSentMessage } = state;
         const { storage, cooldown } = engine.helpers;
 
         const messageType = 'welcome';
         const messageCategory = 'out'; // например, исходящее системное сообщение
 
-        // 2. Проверяем: существует ли такое сообщение?
+        // Проверяем: существует ли такое сообщение?
         if (!engine.has(messageType, messageCategory)) {
             return null; // нет шаблона — не показываем
         }
 
-        // 3. Уже показывали это приветствие? Тогда больше не показываем
-        if (storage.wasShown(messageType, messageCategory)) {
-            return null;
-        }
-
-        // 4. Проверяем кулдаун (например, не показывать чаще раза в 24 часа)
+        // Проверяем кулдаун (например, не показывать чаще раза в 24 часа)
         if (!cooldown.canShow(messageType, messageCategory)) {
             return null;
         }
 
-        // 5. Пользователь уже открывал чат? Тогда уже поздно с приветом
+        // Пользователь уже открывал чат? Тогда уже поздно с приветом
         if (lastChatOpenTime !== null) {
             return null; // чат уже открывали — не показываем
         }
 
-        // 6. Пользователь уже отправил сообщение? Тоже поздно
+        // Пользователь уже отправил сообщение? Тоже поздно
         if (hasSentMessage) {
             return null; // уже писал — значит, начал общение
         }
 
-        // ✅ Всё подходит: ни разу не открывал, не писал, можно показать
-        return messageType; // вернём 'welcome', чтобы движок знал — пора показать
+        return messageType;
     },
 };

@@ -33,32 +33,26 @@ export const ActiveReturnRule = {
         const type = 'active_return';
         const category = 'out';
 
-        // 1. Существует?
+        // Существует?
         if (!engine.has(type, category)) {
             return null;
         }
 
-        // 2. Уже показывали?
-        if (storage.wasShown(type, category)) {
-            return null;
-        }
-
-        // 3. Кулдаун
+        // Кулдаун
         if (!cooldown.canShow(type, category)) {
             return null;
         }
 
-        // 4. Был активен ранее
+        // Был активен ранее
         if (!hasSentMessage) {
             return null;
         }
 
-        // 5. Только если контекст — "возврат"
+        // Только если контекст — "возврат"
         if (context !== 'return') {
             return null;
         }
 
-        // ✅ Все условия выполнены
         return type;
     },
 };

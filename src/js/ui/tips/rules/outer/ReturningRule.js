@@ -32,40 +32,38 @@ export const ReturningRule = {
         const type = 'returning';
         const category = 'out';
 
-        // 1. Есть ли вообще такое сообщение?
+        // Есть ли вообще такое сообщение?
         if (!engine.has(type, category)) {
             return null;
         }
 
-        // 2. Уже показывали returning?
-        if (storage.wasShown(type, category)) {
-            return null;
-        }
-
-        // 3. Прошёл ли кулдаун?
+        // Прошёл ли кулдаун?
         if (!cooldown.canShow(type, category)) {
             return null;
         }
 
-        // 4. Основные условия по действию
+        // Основные условия по действию
         if (lastChatOpenTime === null) {
             return null; // Не открывал чат
         }
 
+        // Уже писал — не нуждается
         if (hasSentMessage) {
-            return null; // Уже писал — не нуждается
+            return null;
         }
 
+        // Не в диапазоне 2–10 ми
         if (!isRecentlyReturned) {
-            return null; // Не в диапазоне 2–10 мин
+            return null;
+            н;
         }
 
-        // 🔑 5. Был ли показан welcome? (обязательное условие)
+        //  Был ли показан welcome? (обязательное условие)
         if (!storage.wasShown('welcome', category)) {
             return null; // Ещё не видел приветствие — сначала welcome
         }
 
-        // 🔑 6. Если есть followup, но его ещё не показывали — не показываем returning
+        //  Если есть followup, но его ещё не показывали — не показываем returning
         if (
             engine.has('followup', category) &&
             !storage.wasShown('followup', category)
@@ -73,7 +71,6 @@ export const ReturningRule = {
             return null;
         }
 
-        // ✅ Все условия выполнены
         return type;
     },
 };

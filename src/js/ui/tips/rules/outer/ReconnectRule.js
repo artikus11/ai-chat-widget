@@ -27,27 +27,21 @@ export const ReconnectRule = {
         const type = 'reconnect';
         const category = 'out';
 
-        // 1. Существует ли?
+        // Существует ли?
         if (!engine.has(type, category)) {
             return null;
         }
 
-        // 2. Уже показывали?
-        if (storage.wasShown(type, category)) {
-            return null;
-        }
-
-        // 3. Действует ли кулдаун? (например, раз в 24 часа)
+        //  Действует ли кулдаун? (например, раз в 24 часа)
         if (!cooldown.canShow(type, category)) {
             return null;
         }
 
-        // 4. Подходит по времени и активности?
+        // Подходит по времени и активности?
         if (!isEligibleForReconnect) {
             return null;
         }
 
-        // ✅ Все условия выполнены
         return type; // 'reconnect'
     },
 };

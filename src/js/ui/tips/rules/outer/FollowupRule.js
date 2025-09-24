@@ -29,37 +29,31 @@ export const FollowupRule = {
         const type = 'followup';
         const category = 'out';
 
-        // 1. Есть ли сообщение?
+        // Есть ли сообщение?
         if (!engine.has(type, category)) {
             return null;
         }
 
-        // 2. Уже показывали followup?
-        if (storage.wasShown(type, category)) {
-            return null;
-        }
-
-        // 3. Действует ли кулдаун (например, 6 часов)?
+        // Действует ли кулдаун (например, 6 часов)?
         if (!cooldown.canShow(type, category)) {
             return null;
         }
 
-        // 4. Был ли показан welcome? (обязательное условие)
+        //  Был ли показан welcome? (обязательное условие)
         if (!storage.wasShown('welcome', category)) {
             return null;
         }
 
-        // 5. Уже открывал чат? Тогда не показываем
+        // Уже открывал чат? Тогда не показываем
         if (lastChatOpenTime !== null) {
             return null;
         }
 
-        // 6. Уже отправил сообщение?
+        // Уже отправил сообщение?
         if (hasSentMessage) {
             return null;
         }
 
-        // ✅ Все условия выполнены
         return type;
     },
 };
